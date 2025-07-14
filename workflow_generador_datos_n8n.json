@@ -1,0 +1,38 @@
+{
+  "name": "Generador de datos aleatorios",
+  "nodes": [
+    {
+      "parameters": {
+        "command": "python3 /ruta/absoluta/a/main.py"
+      },
+      "name": "Generar Datos",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "path": "generar-datos",
+        "method": "POST"
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false
+}
