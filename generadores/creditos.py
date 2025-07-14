@@ -1,39 +1,73 @@
+import pyodbc
 from faker import Faker
 import random
-from datetime import timedelta
+from datetime import date
+
+conn_str = (
+    "DRIVER={SQL Server};"
+    "SERVER=upgradeserver-vf.database.windows.net;"
+    "DATABASE=Banco;"
+    "UID=vanesa;"
+    "PWD=Vane7891@;"
+)
 
 fake = Faker('es_ES')
 Faker.seed(123)
 
 tipos_credito = ['hipoteca', 'personal', 'vehiculo']
 
-def generar_credito(usuario_id):
-    tipo = random.choice(tipos_credito)
+def obtener_ids_usuarios(cursor):
+    cursor.execute("SELECT id FROM usuarios")
+    return [row[0] for row in cursor.fetchall()]
 
-    if tipo == 'hipoteca':
-        cantidad = round(random.uniform(50000, 300000), 2)
-    elif tipo == 'personal':
-        cantidad = round(random.uniform(5000, 50000), 2)
-    elif tipo == 'vehiculo':
-        cantidad = round(random.uniform(10000, 80000), 2)
+def insertar_creditos(cursor, ids_usuarios, max_creditos_por_usuario=2):
+    creditos = []
+    for usuario_id in ids_usuarios:
+        num_creditos = random.randint(0, max_creditos_por_usuario)
+        for _ in range(num_creditos):
+            creditos.append(generar_credito(usuario_id))
+    
+    if creditos:
+        sql = """
+        INSERT INTO creditos (
+            usuario_id, tipo_credito, cantidad_solicitada, fecha_solicitud, activo
+        ) VALUES (?, ?, ?, ?, ?)
+        """
+        cursor.fast_executemany = True
+        cursor.executemany(sql, creditos)
 
-    fecha = fake.date_between(start_date='-10y', end_date='today').isoformat()
-    activo = 'TRUE' if random.random() < 0.8 else 'FALSE'
+def insertar_creditos(cursor, ids_usuarios, max_creditos_por_usuario=2):
+    creditos = []
+    for usuario_id in ids_usuarios:
+        # Al menos 1 crédito, máximo max_creditos_por_usuario
+        num_creditos = random.randint(1, max_creditos_por_usuario)
+        for _ in range(num_creditos):
+            creditos.append(generar_credito(usuario_id))
+    
+    if creditos:
+        sql = """
+        INSERT INTO creditos (
+            usuario_id, tipo_credito, cantidad_solicitada, fecha_solicitud, activo
+        ) VALUES (?, ?, ?, ?, ?)
+        """
+        cursor.fast_executemany = True
+        cursor.executemany(sql, creditos)
 
-    return f"""INSERT INTO creditos (
-        usuario_id, tipo_credito, cantidad_solicitada, fecha_solicitud, activo
-    ) VALUES (
-        {usuario_id}, '{tipo}', {cantidad}, '{fecha}', {activo}
-    );"""
-
-def generar_sql_creditos(num_usuarios, max_creditos_por_usuario=2):
-    inserts = []
-    for usuario_id in range(1, num_usuarios + 1):
-        for _ in range(random.randint(0, max_creditos_por_usuario)):
-            inserts.append(generar_credito(usuario_id))
-    return "\n".join(inserts)
+def main():
+    try:
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            
+            ids_usuarios = obtener_ids_usuarios(cursor)
+            if not ids_usuarios:
+                print("No hay usuarios en la base de datos para asignar créditos.")
+                return
+            
+            insertar_creditos(cursor, ids_usuarios)
+            conn.commit()
+            print(f"Créditos insertados para {len(ids_usuarios)} usuarios existentes.")
+    except Exception as e:
+        print("Error:", e)
 
 if __name__ == "__main__":
-    with open("creditos_insert.sql", "w", encoding="utf-8") as f:
-        f.write(generar_sql_creditos(100))
-    print("✅ Archivo 'creditos_insert.sql' generado con créditos aleatorios.")
+    main()

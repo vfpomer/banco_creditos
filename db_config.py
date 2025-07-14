@@ -1,25 +1,32 @@
-import psycopg2
+import pyodbc
 
-# Cambia estos valores por los de tu base real
-usar_postgresql = False  # ⚠️ Cambia a True si quieres insertar en base de datos
-conexion_config = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "tu_basedatos",
-    "user": "tu_usuario",
-    "password": "tu_contraseña"
-}
+usar_sql_server = True
 
-def insertar_en_db(sql):
+# Reemplaza estos valores con los reales
+server = 'upgradeserver-vf.database.windows.net'
+database = 'Banco'
+username = 'vanesa'  # ⚠️ Este te lo da Azure al crear el servidor
+password = 'Vane7891@'  # ⚠️ La que definiste al crear el servidor
+
+# Cadena de conexión
+conn_str = (
+    'DRIVER={ODBC Driver 17 for SQL Server};'
+    f'SERVER={server};'
+    f'DATABASE={database};'
+    f'UID={username};'
+    f'PWD={password};'
+)
+
+def insertar_en_sql(sql):
+    if not usar_sql_server:
+        print("ℹ️ Conexión a SQL Server desactivada")
+        return
     try:
-        print("🔌 Conectando a PostgreSQL...")
-        conn = psycopg2.connect(**conexion_config)
-        cur = conn.cursor()
-        cur.execute("BEGIN;")
-        cur.execute(sql)
-        cur.execute("COMMIT;")
-        cur.close()
-        conn.close()
-        print("🎯 Datos insertados correctamente en la base de datos.")
+        print("🔌 Conectando a Azure SQL...")
+        with pyodbc.connect(conn_str) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql)
+                conn.commit()
+                print("✅ Datos insertados correctamente.")
     except Exception as e:
-        print("❌ Error al insertar en la base de datos:", e)
+        print("❌ Error al insertar datos:", e)
