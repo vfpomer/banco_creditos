@@ -52,6 +52,60 @@ def generar_dni():
         if dni not in dni_usados:
             dni_usados.add(dni)
             return dni
+# generadores/usuarios.py
+
+def usuarios_insert(cantidad: int) -> str:
+    sql = """
+    IF OBJECT_ID('usuarios', 'U') IS NULL
+    CREATE TABLE usuarios (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        nombre NVARCHAR(100),
+        apellido NVARCHAR(100),
+        estado_civil NVARCHAR(50),
+        dni NVARCHAR(20),
+        nacionalidad NVARCHAR(255),
+        fecha_nacimiento DATE,
+        direccion NVARCHAR(255),
+        codigo_postal NVARCHAR(20),
+        provincia NVARCHAR(100),
+        telefono NVARCHAR(20),
+        email NVARCHAR(100),
+        es_moroso BIT
+    );
+    """
+
+    inserts = []
+    for _ in range(cantidad):
+        # Genera los datos aquí con Faker o similar
+        # Por ejemplo (simplificado):
+        nombre = "Juan"
+        apellido = "Pérez"
+        estado_civil = "Soltero/a"
+        dni = "12345678Z"
+        nacionalidad = "Española"
+        fecha_nacimiento = "1980-01-01"
+        direccion = "Calle Falsa 123"
+        codigo_postal = "28080"
+        provincia = "Madrid"
+        telefono = "612345678"
+        email = f"juan{_}@correo.com"
+        es_moroso = 0
+
+        insert = f"""
+        INSERT INTO usuarios (
+            nombre, apellido, estado_civil, dni, nacionalidad,
+            fecha_nacimiento, direccion, codigo_postal, provincia,
+            telefono, email, es_moroso
+        ) VALUES (
+            '{nombre}', '{apellido}', '{estado_civil}', '{dni}', '{nacionalidad}',
+            '{fecha_nacimiento}', '{direccion}', '{codigo_postal}', '{provincia}',
+            '{telefono}', '{email}', {es_moroso}
+        );
+        """
+        inserts.append(insert)
+
+    return sql + "\n" + "\n".join(inserts)
+
 
 def generar_telefono_espanol():
     return random.choice(['6', '7']) + ''.join(random.choices(string.digits, k=8))
