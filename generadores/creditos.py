@@ -7,8 +7,8 @@ conn_str = (
     "DRIVER={SQL Server};"
     "SERVER=upgradeserver-vf.database.windows.net;"
     "DATABASE=Banco;"
-    "UID=vanesa;"
-    "PWD=Vane7891@;"
+    "UID=TU_USUARIO;"
+    "PWD=TU_PASS;"
 )
 
 fake = Faker('es_ES')
