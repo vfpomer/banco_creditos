@@ -5,8 +5,8 @@ usar_sql_server = True
 # Reemplaza estos valores con los reales
 server = 'upgradeserver-vf.database.windows.net'
 database = 'Banco'
-username = 'TU_USUARIO'  # Este te lo da Azure al crear el servidor
-password = 'TU_PASS'  # La que definiste al crear el servidor
+username = 'vanesa'  #  Este te lo da Azure al crear el servidor
+password = 'Vane7891@'  #  La que definiste al crear el servidor
 
 # Cadena de conexión
 conn_str = (
