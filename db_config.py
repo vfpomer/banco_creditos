@@ -5,8 +5,8 @@ usar_sql_server = True
 # Reemplaza estos valores con los reales
 server = 'upgradeserver-vf.database.windows.net'
 database = 'Banco'
-username = 'vanesa'  # ⚠️ Este te lo da Azure al crear el servidor
-password = 'Vane7891@'  # ⚠️ La que definiste al crear el servidor
+username = 'TU_USUARIO'  # Este te lo da Azure al crear el servidor
+password = 'TU_PASS'  # La que definiste al crear el servidor
 
 # Cadena de conexión
 conn_str = (
@@ -19,14 +19,14 @@ conn_str = (
 
 def insertar_en_sql(sql):
     if not usar_sql_server:
-        print("ℹ️ Conexión a SQL Server desactivada")
+        print("Conexión a SQL Server desactivada")
         return
     try:
-        print("🔌 Conectando a Azure SQL...")
+        print("Conectando a Azure SQL...")
         with pyodbc.connect(conn_str) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql)
                 conn.commit()
-                print("✅ Datos insertados correctamente.")
+                print("Datos insertados correctamente.")
     except Exception as e:
-        print("❌ Error al insertar datos:", e)
+        print("Error al insertar datos:", e)
