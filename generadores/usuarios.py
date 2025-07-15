@@ -11,8 +11,8 @@ print("Drivers ODBC disponibles:", pyodbc.drivers())
 usar_sql_server = True
 server = 'upgradeserver-vf.database.windows.net'
 database = 'Banco'
-username = 'vanesa'
-password = 'Vane7891@'
+username = 'TU_USUARIO'
+password = 'TU_PASS'
 
 conn_str = (
     'DRIVER={SQL Server};'
