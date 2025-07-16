@@ -1,22 +1,26 @@
 import pyodbc
 import random
 
+# Conexión a SQL Server
 conn_str = (
-    "DRIVER={SQL Server};"
+    "DRIVER={ODBC Driver 17 for SQL Server};"
     "SERVER=upgradeserver-vf.database.windows.net;"
     "DATABASE=Banco;"
     "UID=vanesa;"
     "PWD=Vane7891@;"
 )
 
+# Semilla para reproducibilidad
 random.seed(42)
 
+# Tipos de activos y rangos de monto
 tipos_activo = {
     'ahorro': (500, 100000),
     'plan de jubilación': (5000, 250000),
     'inversiones': (1000, 300000)
 }
 
+# Crear tabla si no existe
 def crear_tabla_activos_si_no_existe(cursor):
     sql = """
     IF OBJECT_ID('activos_financieros', 'U') IS NULL
@@ -33,6 +37,7 @@ def crear_tabla_activos_si_no_existe(cursor):
     """
     cursor.execute(sql)
 
+# Generar un activo para un usuario
 def generar_activo(usuario_id):
     tipo = random.choice(list(tipos_activo.keys()))
     min_val, max_val = tipos_activo[tipo]
@@ -40,10 +45,12 @@ def generar_activo(usuario_id):
     descripcion = "Activos financieros"
     return (usuario_id, tipo, descripcion, monto)
 
+# Obtener los IDs de todos los usuarios
 def obtener_ids_usuarios(cursor):
     cursor.execute("SELECT id FROM usuarios")
-    return [row[0] for row in cursor.fetchall()] 
+    return [row[0] for row in cursor.fetchall()]
 
+# Insertar activos para cada usuario
 def insertar_activos(cursor, ids_usuarios, max_activos_por_usuario=3):
     activos = []
     for usuario_id in ids_usuarios:
@@ -58,8 +65,10 @@ def insertar_activos(cursor, ids_usuarios, max_activos_por_usuario=3):
         ) VALUES (?, ?, ?, ?)
         """
         cursor.fast_executemany = True
-        cursor.executemany(sql, activos) 
+        cursor.executemany(sql, activos)
+        print(f"Insertados {len(activos)} activos.")
 
+# Función opcional que devuelve SQL para pruebas
 def activos_insert(cantidad: int) -> str:
     sql = """
     IF OBJECT_ID('activos_financieros', 'U') IS NULL
@@ -73,11 +82,11 @@ def activos_insert(cantidad: int) -> str:
     );
     """
 
-    tipos_activo = ['ahorro', 'plan de jubilación', 'inversiones']
+    tipos = list(tipos_activo.keys())
 
     inserts = []
     for i in range(cantidad):
-        tipo = tipos_activo[i % len(tipos_activo)]
+        tipo = tipos[i % len(tipos)]
         descripcion = 'Activos financieros'
         monto = 1000 + i * 500
         insert = f"""
@@ -88,7 +97,7 @@ def activos_insert(cantidad: int) -> str:
 
     return sql + "\n" + "\n".join(inserts)
 
-
+# MAIN
 def main():
     try:
         with pyodbc.connect(conn_str) as conn:
@@ -98,14 +107,14 @@ def main():
 
             ids_usuarios = obtener_ids_usuarios(cursor)
             if not ids_usuarios:
-                print("No hay usuarios para asignar activos.")
+                print(" No hay usuarios para asignar activos.")
                 return
 
             insertar_activos(cursor, ids_usuarios)
             conn.commit()
-            print(f"Activos insertados para {len(ids_usuarios)} usuarios.")
+            print(f"Activos generados para {len(ids_usuarios)} usuarios.")
     except Exception as e:
-        print("Error al generar activos:", e)
+        print(" Error al generar activos:", e)
 
 if __name__ == "__main__":
     main()

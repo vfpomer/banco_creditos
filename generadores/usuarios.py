@@ -4,45 +4,52 @@ import random
 import string
 import os
 
-# Mostrar drivers disponibles
-print("Drivers ODBC disponibles:", pyodbc.drivers())
+# Mostrar drivers disponibles (puede comentarse si no se requiere)
+# print("Drivers ODBC disponibles:", pyodbc.drivers())
 
 # Configuración de conexión
 usar_sql_server = True
-server = 'upgradeserver-vf.database.windows.net'
-database = 'Banco'
-username = 'TU_USUARIO'
-password = 'TU_PASS'
-
 conn_str = (
-    'DRIVER={SQL Server};'
-    f'SERVER={server};'
-    f'DATABASE={database};'
-    f'UID={username};'
-    f'PWD={password};'
+    "DRIVER={ODBC Driver 17 for SQL Server};"
+    "SERVER=upgradeserver-vf.database.windows.net;"
+    "DATABASE=Banco;"
+    "UID=vanesa;"
+    "PWD=Vane7891@;"
 )
 
-# Faker y configuración
+# Faker
 fake = Faker('es_ES')
 Faker.seed(0)
 
+# Datos auxiliares
 estados_civiles = ['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a']
 dni_usados = set()
 email_usados = set()
 
-# 1. Función que carga las nacionalidades
+def crear_tabla_usuarios(cursor):
+    sql = """
+    IF OBJECT_ID('usuarios', 'U') IS NULL
+    CREATE TABLE usuarios (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        nombre NVARCHAR(100),
+        apellido NVARCHAR(100),
+        email NVARCHAR(255),
+        fecha_nacimiento DATE
+    );
+    """
+    cursor.execute(sql)
+    
+# Función para cargar nacionalidades desde archivo
 def cargar_nacionalidades():
     archivo = "nacionalidades.txt"
     if os.path.exists(archivo):
         with open(archivo, encoding="utf-8") as f:
-            contenido = f.read()
-            return [n.strip() for n in contenido.split() if n.strip()]
-    else:
-        return ['Española', 'Argentina', 'Francesa', 'Alemana', 'Italiana']
+            return [n.strip() for n in f if n.strip()]
+    return ['Española', 'Argentina', 'Francesa', 'Alemana', 'Italiana']
 
-# 2. Asignación (esto debe ir después de definir la función)
 nacionalidades = cargar_nacionalidades()
 
+# Generadores auxiliares
 def generar_dni():
     letras = "TRWAGMYFPDXBNJZSQVHLCKE"
     while True:
@@ -52,62 +59,8 @@ def generar_dni():
         if dni not in dni_usados:
             dni_usados.add(dni)
             return dni
-# generadores/usuarios.py
 
-def usuarios_insert(cantidad: int) -> str:
-    sql = """
-    IF OBJECT_ID('usuarios', 'U') IS NULL
-    CREATE TABLE usuarios (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        nombre NVARCHAR(100),
-        apellido NVARCHAR(100),
-        estado_civil NVARCHAR(50),
-        dni NVARCHAR(20),
-        nacionalidad NVARCHAR(255),
-        fecha_nacimiento DATE,
-        direccion NVARCHAR(255),
-        codigo_postal NVARCHAR(20),
-        provincia NVARCHAR(100),
-        telefono NVARCHAR(20),
-        email NVARCHAR(100),
-        es_moroso BIT
-    );
-    """
-
-    inserts = []
-    for _ in range(cantidad):
-        # Genera los datos aquí con Faker o similar
-        # Por ejemplo (simplificado):
-        nombre = "Juan"
-        apellido = "Pérez"
-        estado_civil = "Soltero/a"
-        dni = "12345678Z"
-        nacionalidad = "Española"
-        fecha_nacimiento = "1980-01-01"
-        direccion = "Calle Falsa 123"
-        codigo_postal = "28080"
-        provincia = "Madrid"
-        telefono = "612345678"
-        email = f"juan{_}@correo.com"
-        es_moroso = 0
-
-        insert = f"""
-        INSERT INTO usuarios (
-            nombre, apellido, estado_civil, dni, nacionalidad,
-            fecha_nacimiento, direccion, codigo_postal, provincia,
-            telefono, email, es_moroso
-        ) VALUES (
-            '{nombre}', '{apellido}', '{estado_civil}', '{dni}', '{nacionalidad}',
-            '{fecha_nacimiento}', '{direccion}', '{codigo_postal}', '{provincia}',
-            '{telefono}', '{email}', {es_moroso}
-        );
-        """
-        inserts.append(insert)
-
-    return sql + "\n" + "\n".join(inserts)
-
-
-def generar_telefono_espanol():
+def generar_telefono():
     return random.choice(['6', '7']) + ''.join(random.choices(string.digits, k=8))
 
 def generar_email():
@@ -120,7 +73,8 @@ def generar_email():
 def escapar_comillas(texto):
     return texto.replace("'", "''")
 
-def generar_usuario():
+# Generador de SQL INSERT para un usuario
+def generar_usuario_sql():
     nombre = escapar_comillas(fake.first_name())
     apellido = escapar_comillas(fake.last_name())
     estado_civil = escapar_comillas(random.choice(estados_civiles))
@@ -130,9 +84,9 @@ def generar_usuario():
     direccion = escapar_comillas(fake.address().replace("\n", ", "))
     codigo_postal = fake.postcode()
     provincia = escapar_comillas(fake.state())
-    telefono = generar_telefono_espanol()
+    telefono = generar_telefono()
     email = generar_email()
-    es_moroso = random.choice(['1', '0']) # 1 para sí, 0 para no
+    es_moroso = random.choice([0, 1])
 
     sql = f"""INSERT INTO usuarios (
         nombre, apellido, estado_civil, dni, nacionalidad,
@@ -145,6 +99,7 @@ def generar_usuario():
     );"""
     return sql
 
+# Crea la tabla si no existe
 def crear_tabla_si_no_existe():
     sql = """
     IF OBJECT_ID('usuarios', 'U') IS NULL
@@ -153,30 +108,27 @@ def crear_tabla_si_no_existe():
         nombre NVARCHAR(100),
         apellido NVARCHAR(100),
         estado_civil NVARCHAR(50),
-        dni NVARCHAR(20),
+        dni NVARCHAR(20) UNIQUE,
         nacionalidad NVARCHAR(255),
         fecha_nacimiento DATE,
         direccion NVARCHAR(255),
         codigo_postal NVARCHAR(20),
         provincia NVARCHAR(100),
         telefono NVARCHAR(20),
-        email NVARCHAR(100),
+        email NVARCHAR(100) UNIQUE,
         es_moroso BIT
     );
     """
     try:
         with pyodbc.connect(conn_str) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(sql)
-                conn.commit()
-                print("Tabla 'usuarios' verificada/creada.")
+            conn.execute(sql)
+            conn.commit()
+            print("Tabla 'usuarios' verificada/creada.")
     except Exception as e:
         print("ERROR al crear/verificar tabla:", e)
 
+# Inserta un único SQL
 def insertar_en_sql(sql):
-    if not usar_sql_server:
-        print("ℹ Conexión a SQL Server desactivada")
-        return
     try:
         with pyodbc.connect(conn_str) as conn:
             with conn.cursor() as cursor:
@@ -184,30 +136,56 @@ def insertar_en_sql(sql):
                 conn.commit()
     except Exception as e:
         print("ERROR al insertar datos:", e)
-        print("SQL problemático:", sql)
+        print(" SQL problemático:\n", sql)
 
+# Muestra los últimos registros
 def leer_usuarios():
-    if not usar_sql_server:
-        print("ℹ Conexión a SQL Server desactivada")
-        return
     try:
         with pyodbc.connect(conn_str) as conn:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT TOP 10 * FROM usuarios ORDER BY id DESC")
                 filas = cursor.fetchall()
-                print("\n Últimos 10 registros en tabla 'usuarios':")
+                print("\nÚltimos 10 registros en 'usuarios':")
                 for fila in filas:
                     print(fila)
     except Exception as e:
         print("ERROR al leer datos:", e)
 
+def generar_usuarios(cantidad: int):
+    try:
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            crear_tabla_usuarios(cursor)
+
+            usuarios = []
+            for _ in range(cantidad):
+                nombre = fake.first_name()
+                apellido = fake.last_name()
+                email = fake.email()
+                fecha_nac = fake.date_of_birth(minimum_age=18, maximum_age=90)
+                usuarios.append((nombre, apellido, email, fecha_nac))
+
+            sql = """
+            INSERT INTO usuarios (nombre, apellido, email, fecha_nacimiento)
+            VALUES (?, ?, ?, ?)
+            """
+            cursor.fast_executemany = True
+            cursor.executemany(sql, usuarios)
+            conn.commit()
+
+            print(f" {cantidad} usuarios insertados correctamente.")
+    except Exception as e:
+        print("Error al insertar usuarios:", e)
+
 # MAIN
 if __name__ == "__main__":
     cantidad = 10
-    print(f"\nGenerando e insertando {cantidad} registros...\n")
+    print(f"\nGenerando e insertando {cantidad} usuarios...\n")
 
     crear_tabla_si_no_existe()
+
     for _ in range(cantidad):
-        sql = generar_usuario()
+        sql = generar_usuario_sql()
         insertar_en_sql(sql)
+
     leer_usuarios()

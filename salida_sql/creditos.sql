@@ -2,7 +2,7 @@
     IF OBJECT_ID('creditos', 'U') IS NULL
     CREATE TABLE creditos (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        usuario_id INT,
+        usuario_id INT NOT NULL,
         monto DECIMAL(18, 2),
         fecha_inicio DATE,
         fecha_fin DATE,

@@ -3,8 +3,9 @@ from faker import Faker
 import random
 from datetime import datetime
 
+# Conexión a Azure SQL
 conn_str = (
-    "DRIVER={SQL Server};"
+    "DRIVER={ODBC Driver 17 for SQL Server};"
     "SERVER=upgradeserver-vf.database.windows.net;"
     "DATABASE=Banco;"
     "UID=vanesa;"
@@ -13,12 +14,77 @@ conn_str = (
 
 fake = Faker('es_ES')
 Faker.seed(42)
+random.seed(42)
 
+# Crear tabla si no existe
 def crear_tabla_empleos(cursor):
     sql = """
-    IF NOT EXISTS (
-        SELECT * FROM sysobjects WHERE name='empleos' AND xtype='U'
+    IF OBJECT_ID('empleos', 'U') IS NULL
+    BEGIN
+        CREATE TABLE empleos (
+            id INT IDENTITY(1,1) PRIMARY KEY,
+            usuario_id INT NOT NULL,
+            nombre_empresa NVARCHAR(255),
+            cargo NVARCHAR(255),
+            salario FLOAT,
+            antiguedad_anios INT,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        );
+    END
+    """
+    cursor.execute(sql)
+
+# Obtener fechas de nacimiento desde la tabla usuarios
+def obtener_fechas_nacimiento(cursor):
+    cursor.execute("SELECT id, fecha_nacimiento FROM usuarios")
+    fechas = {}
+    for row in cursor.fetchall():
+        usuario_id = row.id
+        try:
+            fecha_nacimiento = row.fecha_nacimiento
+            if isinstance(fecha_nacimiento, str):
+                fecha_nacimiento = datetime.strptime(fecha_nacimiento, "%Y-%m-%d").date()
+            fechas[usuario_id] = fecha_nacimiento
+        except Exception:
+            continue
+    return fechas
+
+# Calcular edad desde fecha de nacimiento
+def calcular_edad(fecha_nacimiento):
+    hoy = datetime.today().date()
+    return hoy.year - fecha_nacimiento.year - (
+        (hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day)
     )
+
+# Generar un empleo según la edad
+def generar_empleo(usuario_id, edad):
+    nombre_empresa = fake.company().replace("'", "''")
+    cargo = "Jubilado" if edad > 65 else fake.job().replace("'", "''")
+    salario = 0.0 if cargo == "Jubilado" else round(random.uniform(18000, 100000), 2)
+    antiguedad = 0 if cargo == "Jubilado" else random.randint(0, 40)
+    return (usuario_id, nombre_empresa, cargo, salario, antiguedad)
+
+# Insertar empleos en lote
+def insertar_empleos(cursor, fechas_nacimiento):
+    empleos = []
+    for usuario_id, fecha_nac in fechas_nacimiento.items():
+        edad = calcular_edad(fecha_nac)
+        empleos.append(generar_empleo(usuario_id, edad))
+
+    if empleos:
+        sql = """
+        INSERT INTO empleos (
+            usuario_id, nombre_empresa, cargo, salario, antiguedad_anios
+        ) VALUES (?, ?, ?, ?, ?)
+        """
+        cursor.fast_executemany = True
+        cursor.executemany(sql, empleos)
+        print(f" Insertados {len(empleos)} empleos.")
+
+# Generador SQL para pruebas (opcional)
+def empleos_insert(cantidad: int) -> str:
+    sql = """
+    IF OBJECT_ID('empleos', 'U') IS NULL
     CREATE TABLE empleos (
         id INT IDENTITY(1,1) PRIMARY KEY,
         usuario_id INT NOT NULL,
@@ -29,84 +95,21 @@ def crear_tabla_empleos(cursor):
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
     );
     """
-    cursor.execute(sql)
-
-
-def obtener_fechas_nacimiento(cursor):
-    cursor.execute("SELECT id, fecha_nacimiento FROM usuarios")
-    fechas = {}
-    for row in cursor.fetchall():
-        usuario_id = row.id
-        fecha_str = str(row.fecha_nacimiento)
-        try:
-            fecha_nacimiento = datetime.strptime(fecha_str, "%Y-%m-%d").date()
-        except ValueError:
-            # Si hay error de formato, puedes omitir o manejar como prefieras
-            continue
-        fechas[usuario_id] = fecha_nacimiento
-    return fechas
-
-def calcular_edad(fecha_nacimiento):
-    hoy = datetime.today().date()
-    return hoy.year - fecha_nacimiento.year - (
-        (hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day)
-    )
-
-def generar_empleo(usuario_id, edad):
-    nombre_empresa = fake.company().replace("'", "''")
-    cargo = "Jubilado" if edad > 65 else fake.job().replace("'", "''")
-    salario = 0 if cargo == "Jubilado" else round(random.uniform(18000, 100000), 2)
-    antiguedad = 0 if cargo == "Jubilado" else random.randint(0, 40)
-    return (usuario_id, nombre_empresa, cargo, salario, antiguedad)
-
-def insertar_empleos(cursor, fechas_nacimiento, max_empleos_por_usuario=2):
-    empleos = []
-    for usuario_id, fecha in fechas_nacimiento.items():
-        edad = calcular_edad(fecha)
-        num_empleos = 1 if edad > 65 else random.randint(1, max_empleos_por_usuario)
-        for _ in range(num_empleos):
-            empleos.append(generar_empleo(usuario_id, edad))
-    if empleos:
-        sql = """
-        INSERT INTO empleos (
-            usuario_id, nombre_empresa, cargo, salario, antiguedad_anios
-        ) VALUES (?, ?, ?, ?, ?)
-        """
-        cursor.fast_executemany = True
-        cursor.executemany(sql, empleos)
-
-def empleos_insert(cantidad: int) -> str:
-    sql = """
-    IF OBJECT_ID('empleos', 'U') IS NULL
-    CREATE TABLE empleos (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        usuario_id INT,
-        empresa NVARCHAR(100),
-        puesto NVARCHAR(100),
-        fecha_inicio DATE,
-        fecha_fin DATE NULL,
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-    );
-    """
 
     inserts = []
     for i in range(cantidad):
-        empresa = f"Empresa {i}"
-        puesto = f"Puesto {i}"
-        fecha_inicio = "2015-01-01"
-        fecha_fin = "2020-12-31"
-
         insert = f"""
-        INSERT INTO empleos (usuario_id, empresa, puesto, fecha_inicio, fecha_fin)
-        VALUES ({i+1}, '{empresa}', '{puesto}', '{fecha_inicio}', '{fecha_fin}');
+        INSERT INTO empleos (usuario_id, nombre_empresa, cargo, salario, antiguedad_anios)
+        VALUES ({i+1}, 'Empresa {i}', 'Puesto {i}', 50000, 5);
         """
         inserts.append(insert)
 
     return sql + "\n" + "\n".join(inserts)
 
-
+# MAIN
 def main():
     try:
+        print("Conectando a Azure SQL...")
         with pyodbc.connect(conn_str) as conn:
             cursor = conn.cursor()
 
@@ -115,14 +118,14 @@ def main():
 
             fechas_nacimiento = obtener_fechas_nacimiento(cursor)
             if not fechas_nacimiento:
-                print("No hay usuarios para asignar empleos.")
+                print(" No hay usuarios disponibles en 'usuarios'.")
                 return
 
             insertar_empleos(cursor, fechas_nacimiento)
             conn.commit()
-            print(f"Empleos insertados para {len(fechas_nacimiento)} usuarios.")
+            print(f" Empleos generados para {len(fechas_nacimiento)} usuarios.")
     except Exception as e:
-        print("Error:", e)
+        print(" Error al generar empleos:", e)
 
 if __name__ == "__main__":
     main()

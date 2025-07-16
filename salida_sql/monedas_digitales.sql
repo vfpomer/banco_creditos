@@ -2,408 +2,110 @@
     IF OBJECT_ID('monedas_digitales', 'U') IS NULL
     CREATE TABLE monedas_digitales (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        nombre NVARCHAR(100),
-        simbolo NVARCHAR(10),
-        valor DECIMAL(18,4)
+        usuario_id INT NOT NULL,
+        tipo_moneda NVARCHAR(10) NOT NULL,
+        cantidad FLOAT NOT NULL,
+        valor_actual FLOAT NOT NULL,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
     );
     
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 1000.6394);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 1050.025);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 1100.275);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 1150.2232);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 1200.7365);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 1250.6767);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 1300.8922);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 1350.0869);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 1400.4219);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 1450.0298);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 1500.2186);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 1550.5054);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 1600.0265);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 1650.1988);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 1700.6499);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 1750.5449);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 1800.2204);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 1850.5893);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 1900.8094);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 1950.0065);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 2000.8058);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 2050.6981);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 2100.3403);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 2150.1555);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 2200.9572);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 2250.3366);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 2300.0927);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 2350.0967);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 2400.8475);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 2450.6037);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 2500.8071);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 2550.7297);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 2600.5362);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 2650.9731);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 2700.3785);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 2750.552);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 2800.8294);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 2850.6185);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 2900.8617);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 2950.5774);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 3000.7046);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 3050.0458);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 3100.2279);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 3150.2894);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 3200.0798);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 3250.2328);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 3300.101);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 3350.278);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 3400.6357);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 3450.3648);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 3500.3702);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 3550.2095);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 3600.267);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 3650.9367);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 3700.648);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 3750.6091);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 3800.1711);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 3850.7291);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 3900.1634);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 3950.3795);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 4000.9895);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 4050.64);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 4100.5569);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 4150.6846);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 4200.8429);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 4250.776);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 4300.229);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 4350.0321);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 4400.3155);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 4450.2677);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 4500.211);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 4550.9429);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 4600.8764);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 4650.3147);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 4700.6554);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 4750.3956);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 4800.9145);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 4850.4589);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 4900.2649);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 4950.2466);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 5000.5614);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 5050.2627);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 5100.5846);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 5150.8978);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 5200.3994);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 5250.2193);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 5300.9975);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 5350.5095);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 5400.0909);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 5450.0471);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 5500.1096);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 5550.6274);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 5600.7921);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 5650.4222);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 5700.0635);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Bitcoin', 'BTC', 5750.3816);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ethereum', 'ETH', 5800.9961);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Litecoin', 'LTC', 5850.5291);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Ripple', 'XRP', 5900.9711);
-        
-
-        INSERT INTO monedas_digitales (nombre, simbolo, valor)
-        VALUES ('Cardano', 'ADA', 5950.8608);
-        
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (1, 'BTC', 0.28660981, 43944.33);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (2, 'BTC', 1.85382666, 60259.51);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (3, 'BTC', 0.44027265, 56339.87);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (4, 'BTC', 1.41923798, 57734.97);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (5, 'BTC', 0.21008327, 45992.69);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (6, 'BTC', 2.76308839, 68529.47);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (7, 'BTC', 0.14484423, 40255.87);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (8, 'BTC', 2.55397875, 48249.01);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (9, 'BTC', 1.60464439, 43841.35);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (10, 'BTC', 0.52134066, 55485.38);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (11, 'BTC', 1.30637598, 58103.3);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (12, 'BTC', 1.9845982, 68802.0);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (13, 'BTC', 1.31991426, 55619.88);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (14, 'BTC', 1.42095605, 53484.92);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (15, 'BTC', 2.68192647, 55517.47);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (16, 'BTC', 2.18714548, 65219.24);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (17, 'BTC', 2.95971108, 60594.3);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (18, 'BTC', 0.91973138, 59839.35);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (19, 'BTC', 0.53122135, 45850.03);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (20, 'BTC', 2.63843517, 64537.05);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (21, 'BTC', 0.77831348, 62229.96);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (22, 'BTC', 0.72353181, 67437.88);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (23, 'BTC', 1.07949182, 53502.38);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (24, 'BTC', 0.04405595, 50751.29);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (25, 'BTC', 0.80027008, 56490.93);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (26, 'BTC', 1.07203958, 43290.28);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (27, 'BTC', 1.39443535, 56435.91);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (28, 'BTC', 1.43326642, 64067.36);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (29, 'BTC', 2.25563097, 51101.23);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (30, 'BTC', 0.37994237, 64067.08);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (31, 'BTC', 1.31240915, 46144.12);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (32, 'BTC', 2.1089997, 50629.7);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (33, 'BTC', 0.60625978, 41857.42);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (34, 'BTC', 2.67282766, 65166.07);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (35, 'BTC', 2.45840457, 53663.32);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (36, 'BTC', 2.93246615, 66366.33);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (37, 'BTC', 1.18874722, 46894.86);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (38, 'BTC', 1.08463148, 51671.11);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (39, 'BTC', 2.42792976, 54117.36);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (40, 'BTC', 2.69735228, 60058.97);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (41, 'BTC', 1.36644612, 67426.45);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (42, 'BTC', 0.75279547, 44189.9);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (43, 'BTC', 0.51183506, 50015.72);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (44, 'BTC', 1.05895765, 45248.66);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (45, 'BTC', 2.76935921, 45470.05);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (46, 'BTC', 0.73432251, 67758.5);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (47, 'BTC', 2.87065764, 52300.97);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (48, 'BTC', 1.87681982, 59698.02);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (49, 'BTC', 2.87117413, 49547.56);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (50, 'BTC', 2.87496597, 66031.89);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (51, 'BTC', 2.85775975, 60413.74);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (52, 'BTC', 1.73747829, 43743.09);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (53, 'BTC', 2.43987807, 44443.79);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (54, 'BTC', 0.51541793, 69054.08);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (55, 'BTC', 2.11302732, 65878.65);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (56, 'BTC', 0.74252564, 62052.0);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (57, 'BTC', 0.10079135, 68650.28);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (58, 'BTC', 2.20626638, 69784.82);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (59, 'BTC', 2.89320141, 53370.7);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (60, 'BTC', 2.7761713, 43404.52);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (61, 'BTC', 2.20367335, 46686.91);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (62, 'BTC', 0.21948571, 41453.28);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (63, 'BTC', 0.96829896, 68305.03);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (64, 'BTC', 2.18509168, 66166.66);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (65, 'BTC', 2.56048392, 63966.79);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (66, 'BTC', 0.52773364, 41044.95);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (67, 'BTC', 0.62422918, 45578.85);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (68, 'BTC', 1.75425586, 40017.33);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (69, 'BTC', 0.68003787, 40801.79);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (70, 'BTC', 1.25145178, 50240.44);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (71, 'BTC', 2.34291244, 56320.01);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (72, 'BTC', 0.38969416, 56522.23);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (73, 'BTC', 1.4639039, 60089.9);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (74, 'BTC', 2.64152397, 49449.15);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (75, 'BTC', 2.47930357, 42394.55);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (76, 'BTC', 1.8284519, 66943.92);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (77, 'BTC', 0.03080373, 44924.37);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (78, 'BTC', 2.44725099, 59024.99);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (79, 'BTC', 1.06335703, 62488.37);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (80, 'BTC', 1.72277253, 65617.14);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (81, 'BTC', 0.014834, 49532.13);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (82, 'BTC', 2.47397375, 43385.77);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (83, 'BTC', 0.66078479, 47727.3);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (84, 'BTC', 0.85297535, 57505.11);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (85, 'BTC', 0.96186164, 64859.54);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (86, 'BTC', 2.60371616, 65338.71);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (87, 'BTC', 1.70081311, 60036.16);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (88, 'BTC', 0.71749484, 48670.42);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (89, 'BTC', 1.53921358, 57578.37);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (90, 'BTC', 2.70750296, 51361.43);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (91, 'BTC', 0.41489564, 42584.14);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (92, 'BTC', 2.39268435, 66487.38);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (93, 'BTC', 2.69825642, 53233.75);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (94, 'BTC', 0.56899005, 49274.96);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (95, 'BTC', 0.69580334, 49574.34);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (96, 'BTC', 1.4663683, 52805.67);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (97, 'BTC', 0.78788648, 53126.59);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (98, 'BTC', 2.63088778, 43866.9);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (99, 'BTC', 1.10540379, 43030.54);
+INSERT INTO monedas_digitales (usuario_id, tipo_moneda, cantidad, valor_actual) VALUES (100, 'BTC', 2.04938931, 58628.76);

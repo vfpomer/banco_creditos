@@ -3,7 +3,7 @@ from faker import Faker
 import random
 
 conn_str = (
-    "DRIVER={SQL Server};"
+    "DRIVER={ODBC Driver 17 for SQL Server};"
     "SERVER=upgradeserver-vf.database.windows.net;"
     "DATABASE=Banco;"
     "UID=vanesa;"
@@ -14,9 +14,9 @@ fake = Faker('es_ES')
 Faker.seed(99)
 
 tipos_cuenta = ['corriente', 'ahorro', 'nómina', 'empresa']
-cuentas_usadas = set()
 
 def crear_tabla_cuentas(cursor):
+    print("[INFO] Creando tabla cuentas_bancarias si no existe...")
     sql = """
     IF NOT EXISTS (
         SELECT * FROM sysobjects WHERE name='cuentas_bancarias' AND xtype='U'
@@ -31,57 +31,41 @@ def crear_tabla_cuentas(cursor):
     );
     """
     cursor.execute(sql)
+    print("[INFO] Tabla creada o ya existe.")
 
-def cuentas_insert(cantidad: int) -> str:
-    sql = """
-    IF OBJECT_ID('cuentas_bancarias', 'U') IS NULL
-    CREATE TABLE cuentas_bancarias (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        usuario_id INT,
-        tipo_cuenta NVARCHAR(100),
-        saldo DECIMAL(18, 2),
-        moneda NVARCHAR(50),
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-    );
-    """
+def obtener_ids_usuarios(cursor):
+    print("[INFO] Obteniendo IDs de usuarios existentes...")
+    cursor.execute("SELECT id FROM usuarios")
+    ids = [row[0] for row in cursor.fetchall()]
+    print(f"[INFO] Encontrados {len(ids)} usuarios.")
+    return ids
 
-    tipos_cuenta = ['Ahorro', 'Corriente', 'Inversion']
+def obtener_numeros_cuentas_existentes(cursor):
+    cursor.execute("SELECT numero_cuenta FROM cuentas_bancarias")
+    return set(row[0] for row in cursor.fetchall())
 
-    inserts = []
-    for i in range(cantidad):
-        tipo = tipos_cuenta[i % len(tipos_cuenta)]
-        saldo = 1000 + i * 250
-        moneda = 'EUR'
-        insert = f"""
-        INSERT INTO cuentas_bancarias (usuario_id, tipo_cuenta, saldo, moneda)
-        VALUES ({i+1}, '{tipo}', {saldo}, '{moneda}');
-        """
-        inserts.append(insert)
-
-    return sql + "\n" + "\n".join(inserts)
-
-
-def generar_numero_cuenta():
+def generar_numero_cuenta_unico(numeros_existentes, usados_locales):
     while True:
-        numero = 'ES' + str(random.randint(10, 99))  # código de control
+        numero = 'ES' + str(random.randint(10, 99))
         numero += ''.join([str(random.randint(0, 9)) for _ in range(20)])
-        if numero not in cuentas_usadas:
-            cuentas_usadas.add(numero)
+        if numero not in numeros_existentes and numero not in usados_locales:
+            usados_locales.add(numero)
             return numero
-
-def generar_cuenta(usuario_id):
-    numero_cuenta = generar_numero_cuenta()
-    tipo_cuenta = random.choice(tipos_cuenta)
-    saldo = round(random.uniform(-1000, 100000), 2)
-    return (usuario_id, numero_cuenta, tipo_cuenta, saldo)
 
 def insertar_cuentas(cursor, ids_usuarios, max_cuentas_por_usuario=2):
     cuentas = []
+    print("[INFO] Obteniendo números de cuentas existentes...")
+    numeros_existentes = obtener_numeros_cuentas_existentes(cursor)
+    usados_locales = set()
+
+    print("[INFO] Generando cuentas para usuarios...")
     for usuario_id in ids_usuarios:
-        # Al menos 1 cuenta por usuario
         num_cuentas = random.randint(1, max_cuentas_por_usuario)
         for _ in range(num_cuentas):
-            cuentas.append(generar_cuenta(usuario_id))
+            numero_cuenta = generar_numero_cuenta_unico(numeros_existentes, usados_locales)
+            tipo_cuenta = random.choice(tipos_cuenta)
+            saldo = round(random.uniform(0, 100000), 2)
+            cuentas.append((usuario_id, numero_cuenta, tipo_cuenta, saldo))
 
     if cuentas:
         sql = """
@@ -90,14 +74,12 @@ def insertar_cuentas(cursor, ids_usuarios, max_cuentas_por_usuario=2):
         """
         cursor.fast_executemany = True
         cursor.executemany(sql, cuentas)
-
-def obtener_ids_usuarios(cursor):
-    cursor.execute("SELECT id FROM usuarios")
-    return [row[0] for row in cursor.fetchall()]
+    print(f"[INFO] Insertadas {len(cuentas)} cuentas bancarias.")
 
 def main():
     try:
-        with pyodbc.connect(conn_str) as conn:
+        print("[INFO] Conectando a la base de datos...")
+        with pyodbc.connect(conn_str, timeout=10) as conn:
             cursor = conn.cursor()
 
             crear_tabla_cuentas(cursor)
@@ -105,14 +87,15 @@ def main():
 
             ids_usuarios = obtener_ids_usuarios(cursor)
             if not ids_usuarios:
-                print("No hay usuarios para asignar cuentas bancarias.")
+                print("[WARN] No hay usuarios para asignar cuentas bancarias.")
                 return
 
             insertar_cuentas(cursor, ids_usuarios)
             conn.commit()
-            print(f"Cuentas bancarias insertadas para {len(ids_usuarios)} usuarios.")
+
+            print(f"[SUCCESS] Cuentas bancarias insertadas para {len(ids_usuarios)} usuarios.")
     except Exception as e:
-        print("Error:", e)
+        print("[ERROR]", e)
 
 if __name__ == "__main__":
     main()
