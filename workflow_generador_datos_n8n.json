@@ -1,32 +1,144 @@
 {
-  "name": "Generador de datos aleatorios",
+  "name": "Generar datos y recordar morosos",
   "nodes": [
     {
       "parameters": {
-        "command": "python3 /ruta/absoluta/a/main.py"
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 0,
+              "minute": 0
+            }
+          ]
+        }
       },
-      "name": "Generar Datos",
-      "type": "n8n-nodes-base.executeCommand",
+      "name": "Trigger Cada Hora",
+      "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [450, 300]
+      "position": [200, 200]
+    },
+    {
+              "parameters": {
+                "command": "cd C:\\Users\\rey_d\\Documents\\GitHub\\banco_creditos\\generadores && python main.py",
+                "maxBuffer": 1073741824
+
+              },
+              "name": "Ejecutar main.py",
+              "type": "n8n-nodes-base.executeCommand",
+              "typeVersion": 1,
+              "position": [450, 200]
+            },
+    {
+      "parameters": {},
+      "name": "Procesar salida de main.py",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [700, 200],
+      "functionCode": "return [{\n  json: {\n    output_stdout: $node[\"Ejecutar main.py\"].json[\"stdout\"] || \"No hay salida\",\n    output_stderr: $node[\"Ejecutar main.py\"].json[\"stderr\"] || \"\"\n  }\n}];"
     },
     {
       "parameters": {
-        "path": "generar-datos",
-        "method": "POST"
+        "triggerTimes": {
+          "item": [
+            {
+              "dayOfMonth": 1,
+              "hour": 9,
+              "minute": 0
+            }
+          ]
+        }
       },
-      "name": "Webhook",
-      "type": "n8n-nodes-base.webhook",
+      "name": "Trigger Mensual",
+      "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [200, 300]
+      "position": [200, 500]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "usuarios",
+        "columns": [
+          "telefono",
+          "nombre"
+        ],
+        "filters": {
+          "conditions": [
+            {
+              "column": "es_moroso",
+              "operation": "=",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "name": "Seleccionar Morosos",
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1,
+      "position": [450, 500],
+      "credentials": {
+        "microsoftSql": {
+          "id": "eeZ11UVSHrtOUTQU",
+          "name": "Credenciales Azure SQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+1234567890",
+        "to": "={{ $json[\"telefono\"] }}",
+        "message": "Hola {{$json[\"nombre\"]}}, por favor regularice su deuda con nuestro banco lo antes posible. Gracias."
+      },
+      "name": "Enviar SMS a Moroso",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [700, 500],
+      "credentials": {
+        "twilioApi": {
+          "id": "eeZ11UVSHrtOUTQU",
+          "name": "Twilio"
+        }
+      }
     }
   ],
   "connections": {
-    "Webhook": {
+    "Trigger Cada Hora": {
       "main": [
         [
           {
-            "node": "Generar Datos",
+            "node": "Ejecutar main.py",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejecutar main.py": {
+      "main": [
+        [
+          {
+            "node": "Procesar salida de main.py",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Mensual": {
+      "main": [
+        [
+          {
+            "node": "Seleccionar Morosos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seleccionar Morosos": {
+      "main": [
+        [
+          {
+            "node": "Enviar SMS a Moroso",
             "type": "main",
             "index": 0
           }
@@ -34,5 +146,5 @@
       ]
     }
   },
-  "active": false
+  "active": true
 }

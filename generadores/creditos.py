@@ -34,6 +34,29 @@ def crear_tabla_creditos_si_no_existe(cursor):
     """
     cursor.execute(sql)
 
+#n8n
+def leer_creditos():
+    try:
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM creditos")
+            filas = cursor.fetchall()
+            creditos = []
+            for fila in filas:
+                creditos.append({
+                    "id": fila.id,
+                    "usuario_id": fila.usuario_id,
+                    "monto": float(fila.monto),
+                    "fecha_inicio": fila.fecha_inicio.isoformat() if fila.fecha_inicio else None,
+                    "fecha_fin": fila.fecha_fin.isoformat() if fila.fecha_fin else None,
+                    "estado": fila.estado
+                })
+            return creditos
+    except Exception as e:
+        print("Error al leer créditos:", e)
+        return []
+
+
 # Generar un crédito para un usuario
 def generar_credito(usuario_id):
     monto = round(random.uniform(1000, 50000), 2)

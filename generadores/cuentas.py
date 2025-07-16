@@ -76,6 +76,30 @@ def insertar_cuentas(cursor, ids_usuarios, max_cuentas_por_usuario=2):
         cursor.executemany(sql, cuentas)
     print(f"[INFO] Insertadas {len(cuentas)} cuentas bancarias.")
 
+#n8n
+def leer_cuentas():
+    try:
+        print("[INFO] Leyendo cuentas bancarias desde la base de datos...")
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM cuentas_bancarias")
+            filas = cursor.fetchall()
+            cuentas = []
+            for fila in filas:
+                cuentas.append({
+                    "id": fila.id,
+                    "usuario_id": fila.usuario_id,
+                    "numero_cuenta": fila.numero_cuenta,
+                    "tipo_cuenta": fila.tipo_cuenta,
+                    "saldo": float(fila.saldo)
+                })
+            print(f"[INFO] Leídas {len(cuentas)} cuentas.")
+            return cuentas
+    except Exception as e:
+        print("[ERROR] No se pudieron leer las cuentas bancarias:", e)
+        return []
+
+
 def main():
     try:
         print("[INFO] Conectando a la base de datos...")

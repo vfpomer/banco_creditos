@@ -1,106 +1,14 @@
 import pyodbc
 from faker import Faker
 import random
-import string
-import os
+import json
 
-# Mostrar drivers disponibles (puede comentarse si no se requiere)
-# print("Drivers ODBC disponibles:", pyodbc.drivers())
-
-# Configuración de conexión
-usar_sql_server = True
-conn_str = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=upgradeserver-vf.database.windows.net;"
-    "DATABASE=Banco;"
-    "UID=vanesa;"
-    "PWD=Vane7891@;"
-)
-
-# Faker
 fake = Faker('es_ES')
-Faker.seed(0)
-
-# Datos auxiliares
 estados_civiles = ['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a']
 dni_usados = set()
 email_usados = set()
 
-def crear_tabla_usuarios(cursor):
-    sql = """
-    IF OBJECT_ID('usuarios', 'U') IS NULL
-    CREATE TABLE usuarios (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        nombre NVARCHAR(100),
-        apellido NVARCHAR(100),
-        email NVARCHAR(255),
-        fecha_nacimiento DATE
-    );
-    """
-    cursor.execute(sql)
-    
-# Función para cargar nacionalidades desde archivo
-def cargar_nacionalidades():
-    archivo = "nacionalidades.txt"
-    if os.path.exists(archivo):
-        with open(archivo, encoding="utf-8") as f:
-            return [n.strip() for n in f if n.strip()]
-    return ['Española', 'Argentina', 'Francesa', 'Alemana', 'Italiana']
-
-nacionalidades = cargar_nacionalidades()
-
-# Generadores auxiliares
-def generar_dni():
-    letras = "TRWAGMYFPDXBNJZSQVHLCKE"
-    while True:
-        numero = random.randint(10000000, 99999999)
-        letra = letras[numero % 23]
-        dni = f"{numero}{letra}"
-        if dni not in dni_usados:
-            dni_usados.add(dni)
-            return dni
-
-def generar_telefono():
-    return random.choice(['6', '7']) + ''.join(random.choices(string.digits, k=8))
-
-def generar_email():
-    while True:
-        email = fake.unique.email()
-        if email not in email_usados:
-            email_usados.add(email)
-            return email
-
-def escapar_comillas(texto):
-    return texto.replace("'", "''")
-
-# Generador de SQL INSERT para un usuario
-def generar_usuario_sql():
-    nombre = escapar_comillas(fake.first_name())
-    apellido = escapar_comillas(fake.last_name())
-    estado_civil = escapar_comillas(random.choice(estados_civiles))
-    dni = generar_dni()
-    nacionalidad = escapar_comillas(random.choice(nacionalidades))
-    fecha_nacimiento = fake.date_of_birth(minimum_age=18, maximum_age=80).isoformat()
-    direccion = escapar_comillas(fake.address().replace("\n", ", "))
-    codigo_postal = fake.postcode()
-    provincia = escapar_comillas(fake.state())
-    telefono = generar_telefono()
-    email = generar_email()
-    es_moroso = random.choice([0, 1])
-
-    sql = f"""INSERT INTO usuarios (
-        nombre, apellido, estado_civil, dni, nacionalidad,
-        fecha_nacimiento, direccion, codigo_postal, provincia,
-        telefono, email, es_moroso
-    ) VALUES (
-        '{nombre}', '{apellido}', '{estado_civil}', '{dni}', '{nacionalidad}',
-        '{fecha_nacimiento}', '{direccion}', '{codigo_postal}', '{provincia}',
-        '{telefono}', '{email}', {es_moroso}
-    );"""
-    return sql
-
-# Crea la tabla si no existe
-def crear_tabla_si_no_existe():
+def crear_tabla_si_no_existe(conn_str):
     sql = """
     IF OBJECT_ID('usuarios', 'U') IS NULL
     CREATE TABLE usuarios (
@@ -127,65 +35,121 @@ def crear_tabla_si_no_existe():
     except Exception as e:
         print("ERROR al crear/verificar tabla:", e)
 
-# Inserta un único SQL
-def insertar_en_sql(sql):
-    try:
-        with pyodbc.connect(conn_str) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(sql)
-                conn.commit()
-    except Exception as e:
-        print("ERROR al insertar datos:", e)
-        print(" SQL problemático:\n", sql)
+def generar_dni():
+    letras = "TRWAGMYFPDXBNJZSQVHLCKE"
+    while True:
+        numero = random.randint(10000000, 99999999)
+        letra = letras[numero % 23]
+        dni = f"{numero}{letra}"
+        if dni not in dni_usados:
+            dni_usados.add(dni)
+            return dni
 
-# Muestra los últimos registros
-def leer_usuarios():
-    try:
-        with pyodbc.connect(conn_str) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT TOP 10 * FROM usuarios ORDER BY id DESC")
-                filas = cursor.fetchall()
-                print("\nÚltimos 10 registros en 'usuarios':")
-                for fila in filas:
-                    print(fila)
-    except Exception as e:
-        print("ERROR al leer datos:", e)
+def generar_telefono():
+    return random.choice(['6', '7']) + ''.join(random.choices('0123456789', k=8))
 
-def generar_usuarios(cantidad: int):
+def generar_email():
+    while True:
+        email = fake.unique.email()
+        if email not in email_usados:
+            email_usados.add(email)
+            return email
+
+def generar_usuarios(cantidad, conn_str):
+    nacionalidades = ['Española', 'Argentina', 'Francesa', 'Alemana', 'Italiana']
+
     try:
         with pyodbc.connect(conn_str) as conn:
             cursor = conn.cursor()
-            crear_tabla_usuarios(cursor)
 
             usuarios = []
             for _ in range(cantidad):
                 nombre = fake.first_name()
                 apellido = fake.last_name()
-                email = fake.email()
-                fecha_nac = fake.date_of_birth(minimum_age=18, maximum_age=90)
-                usuarios.append((nombre, apellido, email, fecha_nac))
+                estado_civil = random.choice(estados_civiles)
+                dni = generar_dni()
+                nacionalidad = random.choice(nacionalidades)
+                fecha_nac = fake.date_of_birth(minimum_age=18, maximum_age=80).isoformat()
+                direccion = fake.address().replace("\n", ", ")
+                codigo_postal = fake.postcode()
+                provincia = fake.state()
+                telefono = generar_telefono()
+                email = generar_email()
+                es_moroso = random.choice([0, 1])
+
+                usuarios.append((
+                    nombre,
+                    apellido,
+                    estado_civil,
+                    dni,
+                    nacionalidad,
+                    fecha_nac,
+                    direccion,
+                    codigo_postal,
+                    provincia,
+                    telefono,
+                    email,
+                    es_moroso
+                ))
 
             sql = """
-            INSERT INTO usuarios (nombre, apellido, email, fecha_nacimiento)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO usuarios (
+                nombre, apellido, estado_civil, dni, nacionalidad,
+                fecha_nacimiento, direccion, codigo_postal, provincia,
+                telefono, email, es_moroso
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
+
             cursor.fast_executemany = True
             cursor.executemany(sql, usuarios)
             conn.commit()
 
-            print(f" {cantidad} usuarios insertados correctamente.")
+            print(f"{cantidad} usuarios insertados correctamente.")
+
     except Exception as e:
-        print("Error al insertar usuarios:", e)
+        print("ERROR al insertar usuarios:", e)
 
-# MAIN
+def leer_usuarios(conn_str):
+    try:
+        print("[INFO] Leyendo usuarios desde la base de datos...")
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM usuarios")
+            filas = cursor.fetchall()
+            usuarios = []
+            for fila in filas:
+                usuarios.append({
+                    "id": fila.id,
+                    "nombre": fila.nombre,
+                    "apellido": fila.apellido,
+                    "estado_civil": fila.estado_civil,
+                    "dni": fila.dni,
+                    "nacionalidad": fila.nacionalidad,
+                    "direccion": fila.direccion,
+                    "codigo_postal": fila.codigo_postal,
+                    "provincia": fila.provincia,
+                    "telefono": fila.telefono,
+                    "es_moroso": bool(fila.es_moroso),
+                    "fecha_nacimiento": fila.fecha_nacimiento.isoformat() if fila.fecha_nacimiento else None,
+                    "email": fila.email if fila.email else None
+                })
+
+            print(f"[INFO] Leídos {len(usuarios)} usuarios.")
+            return usuarios
+    except Exception as e:
+        print("[ERROR] No se pudieron leer los usuarios:", e)
+        return []
+
 if __name__ == "__main__":
-    cantidad = 10
-    print(f"\nGenerando e insertando {cantidad} usuarios...\n")
-
-    crear_tabla_si_no_existe()
-
-    for _ in range(cantidad):
-        sql = generar_usuario_sql()
-        insertar_en_sql(sql)
-
-    leer_usuarios()
+    # Puedes probar este módulo así:
+    test_conn_str = (
+        "DRIVER={ODBC Driver 17 for SQL Server};"
+        "SERVER=upgradeserver-vf.database.windows.net;"
+        "DATABASE=Banco;"
+        "UID=vanesa;"
+        "PWD=Vane7891@;"
+    )
+    print("Creando tabla si no existe y generando usuarios...")
+    crear_tabla_si_no_existe(test_conn_str)
+    generar_usuarios(10, test_conn_str)
+    print(json.dumps(leer_usuarios(test_conn_str), indent=2, ensure_ascii=False))

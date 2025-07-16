@@ -68,6 +68,28 @@ def insertar_activos(cursor, ids_usuarios, max_activos_por_usuario=3):
         cursor.executemany(sql, activos)
         print(f"Insertados {len(activos)} activos.")
 
+#n8n
+def leer_activos():
+    try:
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM activos_financieros")
+            filas = cursor.fetchall()
+            activos = []
+            for fila in filas:
+                activos.append({
+                    "id": fila.id,
+                    "usuario_id": fila.usuario_id,
+                    "tipo_activo": fila.tipo_activo,
+                    "descripcion": fila.descripcion,
+                    "monto": float(fila.monto),
+                })
+            return activos
+    except Exception as e:
+        print("Error al leer activos:", e)
+        return []
+
+
 # Función opcional que devuelve SQL para pruebas
 def activos_insert(cantidad: int) -> str:
     sql = """

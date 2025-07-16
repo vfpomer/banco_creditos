@@ -16,7 +16,6 @@ fake = Faker('es_ES')
 Faker.seed(42)
 random.seed(42)
 
-# Crear tabla si no existe
 def crear_tabla_empleos(cursor):
     sql = """
     IF OBJECT_ID('empleos', 'U') IS NULL
@@ -29,12 +28,32 @@ def crear_tabla_empleos(cursor):
             salario FLOAT,
             antiguedad_anios INT,
             FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-        );
+        )
     END
     """
     cursor.execute(sql)
 
-# Obtener fechas de nacimiento desde la tabla usuarios
+def leer_empleos():
+    try:
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM empleos")
+            filas = cursor.fetchall()
+            empleos = []
+            for fila in filas:
+                empleos.append({
+                    "id": fila.id,
+                    "usuario_id": fila.usuario_id,
+                    "nombre_empresa": fila.nombre_empresa,
+                    "cargo": fila.cargo,
+                    "salario": float(fila.salario),
+                    "antiguedad_anios": fila.antiguedad_anios
+                })
+            return empleos
+    except Exception as e:
+        print("Error al leer empleos:", e)
+        return []
+
 def obtener_fechas_nacimiento(cursor):
     cursor.execute("SELECT id, fecha_nacimiento FROM usuarios")
     fechas = {}
@@ -49,14 +68,12 @@ def obtener_fechas_nacimiento(cursor):
             continue
     return fechas
 
-# Calcular edad desde fecha de nacimiento
 def calcular_edad(fecha_nacimiento):
     hoy = datetime.today().date()
     return hoy.year - fecha_nacimiento.year - (
         (hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day)
     )
 
-# Generar un empleo según la edad
 def generar_empleo(usuario_id, edad):
     nombre_empresa = fake.company().replace("'", "''")
     cargo = "Jubilado" if edad > 65 else fake.job().replace("'", "''")
@@ -64,7 +81,6 @@ def generar_empleo(usuario_id, edad):
     antiguedad = 0 if cargo == "Jubilado" else random.randint(0, 40)
     return (usuario_id, nombre_empresa, cargo, salario, antiguedad)
 
-# Insertar empleos en lote
 def insertar_empleos(cursor, fechas_nacimiento):
     empleos = []
     for usuario_id, fecha_nac in fechas_nacimiento.items():
@@ -81,32 +97,6 @@ def insertar_empleos(cursor, fechas_nacimiento):
         cursor.executemany(sql, empleos)
         print(f" Insertados {len(empleos)} empleos.")
 
-# Generador SQL para pruebas (opcional)
-def empleos_insert(cantidad: int) -> str:
-    sql = """
-    IF OBJECT_ID('empleos', 'U') IS NULL
-    CREATE TABLE empleos (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        usuario_id INT NOT NULL,
-        nombre_empresa NVARCHAR(255),
-        cargo NVARCHAR(255),
-        salario FLOAT,
-        antiguedad_anios INT,
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-    );
-    """
-
-    inserts = []
-    for i in range(cantidad):
-        insert = f"""
-        INSERT INTO empleos (usuario_id, nombre_empresa, cargo, salario, antiguedad_anios)
-        VALUES ({i+1}, 'Empresa {i}', 'Puesto {i}', 50000, 5);
-        """
-        inserts.append(insert)
-
-    return sql + "\n" + "\n".join(inserts)
-
-# MAIN
 def main():
     try:
         print("Conectando a Azure SQL...")

@@ -102,6 +102,28 @@ def monedas_insert(cantidad: int) -> str:
 
     return sql + "\n" + "\n".join(inserts)
 
+#n8n
+def leer_monedas():
+    try:
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM monedas_digitales")
+            filas = cursor.fetchall()
+            monedas = []
+            for fila in filas:
+                monedas.append({
+                    "id": fila.id,
+                    "usuario_id": fila.usuario_id,
+                    "tipo_moneda": fila.tipo_moneda,
+                    "cantidad": float(fila.cantidad),
+                    "valor_actual": float(fila.valor_actual)
+                })
+            return monedas
+    except Exception as e:
+        print("Error al leer monedas digitales:", e)
+        return []
+
+
 # MAIN
 def main():
     try:
