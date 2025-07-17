@@ -159,7 +159,7 @@ def leer_usuarios(conn_str):
 
 if __name__ == "__main__":
     # Puedes probar este módulo así:
-    test_conn_str = (
+    conn_str = (
        # Cadena de conexión segura
 
         f"DRIVER={{ODBC Driver 17 for SQL Server}};"

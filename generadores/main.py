@@ -20,7 +20,7 @@ username = os.getenv("USUARIO_DB")
 password = os.getenv("CLAVE_BD")
 
 # Cadena de conexión segura
-test_conn_str = (
+conn_str = (
     f"DRIVER={{ODBC Driver 17 for SQL Server}};"
     f"SERVER={server};"
     f"DATABASE={database};"
