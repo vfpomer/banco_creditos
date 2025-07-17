@@ -3,6 +3,23 @@ from faker import Faker
 import random
 import json
 
+from dotenv import load_dotenv
+import os
+
+#cargar las variables desde el archivo .env
+load_dotenv()
+
+usar_sql_server = True
+
+# Parámetros de conexión
+server = 'upgradeserver-vf.database.windows.net'
+database = 'Banco'
+username = os.getenv("USUARIO_DB")
+password = os.getenv("CLAVE_BD")
+
+
+
+
 fake = Faker('es_ES')
 estados_civiles = ['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a']
 dni_usados = set()
@@ -143,11 +160,13 @@ def leer_usuarios(conn_str):
 if __name__ == "__main__":
     # Puedes probar este módulo así:
     test_conn_str = (
-        "DRIVER={ODBC Driver 17 for SQL Server};"
-        "SERVER=upgradeserver-vf.database.windows.net;"
-        "DATABASE=Banco;"
-        "UID=vanesa;"
-        "PWD=Vane7891@;"
+       # Cadena de conexión segura
+
+        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+        f"SERVER={server};"
+        f"DATABASE={database};"
+        f"UID={username};"
+        f"PWD={password};"
     )
     print("Creando tabla si no existe y generando usuarios...")
     crear_tabla_si_no_existe(test_conn_str)

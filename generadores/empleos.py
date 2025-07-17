@@ -2,16 +2,26 @@ import pyodbc
 from faker import Faker
 import random
 from datetime import datetime
+from dotenv import load_dotenv
+import os
 
-# Conexión a Azure SQL
-conn_str = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=upgradeserver-vf.database.windows.net;"
-    "DATABASE=Banco;"
-    "UID=vanesa;"
-    "PWD=Vane7891@;"
+# Cargar variables del archivo .env
+load_dotenv()
+
+# Parámetros de conexión
+server = 'upgradeserver-vf.database.windows.net'
+database = 'Banco'
+username = os.getenv("USUARIO_DB")
+password = os.getenv("CLAVE_BD")
+
+# Cadena de conexión segura
+test_conn_str = (
+    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+    f"SERVER={server};"
+    f"DATABASE={database};"
+    f"UID={username};"
+    f"PWD={password};"
 )
-
 fake = Faker('es_ES')
 Faker.seed(42)
 random.seed(42)

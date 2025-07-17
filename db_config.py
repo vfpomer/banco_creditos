@@ -1,12 +1,17 @@
 import pyodbc
+from dotenv import load_dotenv
+import os
+
+#cargar las variables desde el archivo .env
+load_dotenv()
 
 usar_sql_server = True
 
 # Reemplaza estos valores con los reales
 server = 'upgradeserver-vf.database.windows.net'
 database = 'Banco'
-username = 'vanesa'  #  Este te lo da Azure al crear el servidor
-password = 'Vane7891@'  #  La que definiste al crear el servidor
+username = os.getenv("USUARIO_DB")  #  Este te lo da Azure al crear el servidor
+password = os.getenv("CLAVE_BD")  #  La que definiste al crear el servidor
 
 # Cadena de conexión
 conn_str = (

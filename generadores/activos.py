@@ -1,13 +1,26 @@
 import pyodbc
 import random
 
+from dotenv import load_dotenv
+import os
+
+# Cargar variables del archivo .env
+load_dotenv()
+
+# Parámetros de conexión
+server = 'upgradeserver-vf.database.windows.net'
+database = 'Banco'
+username = os.getenv("USUARIO_DB")
+password = os.getenv("CLAVE_BD")
+    
+
 # Conexión a SQL Server
 conn_str = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=upgradeserver-vf.database.windows.net;"
-    "DATABASE=Banco;"
-    "UID=vanesa;"
-    "PWD=Vane7891@;"
+    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+    f"SERVER={server};"
+    f"DATABASE={database};"
+    f"UID={username};"
+    f"PWD={password};"
 )
 
 # Semilla para reproducibilidad
