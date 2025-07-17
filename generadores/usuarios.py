@@ -21,7 +21,7 @@ password = os.getenv("CLAVE_BD")
 
 
 fake = Faker('es_ES')
-estados_civiles = ['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a']
+estados_civiles = ['Soltero', 'Soltera', 'Casado', 'Casada', 'Divorciado', 'Divorciada', 'Viudo', 'Viuda']
 dni_usados = set()
 email_usados = set()
 
