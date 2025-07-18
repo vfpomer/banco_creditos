@@ -4,16 +4,13 @@ import random
 from dotenv import load_dotenv
 import os
 
-# Cargar variables del archivo .env
 load_dotenv()
 
-# Parámetros de conexión
 server = 'upgradeserver-vf.database.windows.net'
 database = 'Banco'
 username = os.getenv("USUARIO_DB")
 password = os.getenv("CLAVE_BD")
 
-# Cadena de conexión segura
 conn_str = (
     f"DRIVER={{ODBC Driver 17 for SQL Server}};"
     f"SERVER={server};"
@@ -25,7 +22,7 @@ conn_str = (
 fake = Faker('es_ES')
 Faker.seed(99)
 
-tipos_cuenta = ['corriente', 'ahorro', 'nómina', 'empresa']
+tipos_cuenta = ['ahorro', 'nómina', 'empresa']
 
 def crear_tabla_cuentas(cursor):
     print("[INFO] Creando tabla cuentas_bancarias si no existe...")
@@ -63,21 +60,49 @@ def generar_numero_cuenta_unico(numeros_existentes, usados_locales):
         if numero not in numeros_existentes and numero not in usados_locales:
             usados_locales.add(numero)
             return numero
+        
+CANTIDAD_CUENTAS_A_GENERAR = 1
+def insertar_cuentas(cursor, ids_usuarios,cantidad):
+   
+    cantidad = CANTIDAD_CUENTAS_A_GENERAR
 
-def insertar_cuentas(cursor, ids_usuarios, max_cuentas_por_usuario=2):
-    cuentas = []
-    print("[INFO] Obteniendo números de cuentas existentes...")
+    if not ids_usuarios:
+        print("[WARN] No hay usuarios para asignar cuentas bancarias.")
+        return
+
     numeros_existentes = obtener_numeros_cuentas_existentes(cursor)
     usados_locales = set()
+    cuentas = []
 
-    print("[INFO] Generando cuentas para usuarios...")
-    for usuario_id in ids_usuarios:
-        num_cuentas = random.randint(1, max_cuentas_por_usuario)
-        for _ in range(num_cuentas):
-            numero_cuenta = generar_numero_cuenta_unico(numeros_existentes, usados_locales)
-            tipo_cuenta = random.choice(tipos_cuenta)
-            saldo = round(random.uniform(0, 100000), 2)
-            cuentas.append((usuario_id, numero_cuenta, tipo_cuenta, saldo))
+    tipos_por_usuario = {}
+
+    print(f"[INFO] Generando {cantidad} cuentas bancarias para usuarios aleatorios sin repetir tipo por usuario...")
+
+    intentos = 0
+    max_intentos = cantidad * 10
+
+    while len(cuentas) < cantidad and intentos < max_intentos:
+        intentos += 1
+
+        usuario_id = random.choice(ids_usuarios)
+        tipos_asignados = tipos_por_usuario.get(usuario_id, set())
+
+        tipos_disponibles = [t for t in tipos_cuenta if t not in tipos_asignados]
+
+        if not tipos_disponibles:
+            continue
+
+        tipo_cuenta = random.choice(tipos_disponibles)
+        numero_cuenta = generar_numero_cuenta_unico(numeros_existentes, usados_locales)
+        saldo = round(random.uniform(0, 100000), 2)
+
+        cuentas.append((usuario_id, numero_cuenta, tipo_cuenta, saldo))
+
+        tipos_asignados.add(tipo_cuenta)
+        tipos_por_usuario[usuario_id] = tipos_asignados
+
+    if len(cuentas) < cantidad:
+        print(f"[WARN] Solo se pudieron generar {len(cuentas)} cuentas sin repetir tipo por usuario.")
 
     if cuentas:
         sql = """
@@ -86,31 +111,7 @@ def insertar_cuentas(cursor, ids_usuarios, max_cuentas_por_usuario=2):
         """
         cursor.fast_executemany = True
         cursor.executemany(sql, cuentas)
-    print(f"[INFO] Insertadas {len(cuentas)} cuentas bancarias.")
-
-#n8n
-def leer_cuentas():
-    try:
-        print("[INFO] Leyendo cuentas bancarias desde la base de datos...")
-        with pyodbc.connect(conn_str) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM cuentas_bancarias")
-            filas = cursor.fetchall()
-            cuentas = []
-            for fila in filas:
-                cuentas.append({
-                    "id": fila.id,
-                    "usuario_id": fila.usuario_id,
-                    "numero_cuenta": fila.numero_cuenta,
-                    "tipo_cuenta": fila.tipo_cuenta,
-                    "saldo": float(fila.saldo)
-                })
-            print(f"[INFO] Leídas {len(cuentas)} cuentas.")
-            return cuentas
-    except Exception as e:
-        print("[ERROR] No se pudieron leer las cuentas bancarias:", e)
-        return []
-
+        print(f"[SUCCESS] Insertadas {len(cuentas)} cuentas bancarias.")
 
 def main():
     try:
@@ -122,14 +123,9 @@ def main():
             conn.commit()
 
             ids_usuarios = obtener_ids_usuarios(cursor)
-            if not ids_usuarios:
-                print("[WARN] No hay usuarios para asignar cuentas bancarias.")
-                return
-
-            insertar_cuentas(cursor, ids_usuarios)
+            insertar_cuentas(cursor, ids_usuarios, cantidad=10)
             conn.commit()
 
-            print(f"[SUCCESS] Cuentas bancarias insertadas para {len(ids_usuarios)} usuarios.")
     except Exception as e:
         print("[ERROR]", e)
 

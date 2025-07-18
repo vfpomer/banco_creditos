@@ -1,16 +1,16 @@
 import json
-from usuarios import generar_usuarios, leer_usuarios
-from empleos import main as main_empleos, leer_empleos
-from activos import main as main_activos, leer_activos
-from monedas import main as main_monedas, leer_monedas
-from creditos import main as main_creditos, leer_creditos
-from datetime import datetime, timedelta
 import pyodbc
-
 from dotenv import load_dotenv
 import os
+import datetime
 
-# Cargar variables del archivo .env
+# Importa los módulos que generan y leen datos
+from usuarios import generar_usuarios, leer_usuarios
+from activos import generar_activo, leer_activos
+from monedas import generar_moneda, leer_monedas
+from creditos import insertar_creditos, leer_creditos
+
+# Cargar variables de entorno
 load_dotenv()
 
 # Parámetros de conexión
@@ -19,7 +19,6 @@ database = 'Banco'
 username = os.getenv("USUARIO_DB")
 password = os.getenv("CLAVE_BD")
 
-# Cadena de conexión segura
 conn_str = (
     f"DRIVER={{ODBC Driver 17 for SQL Server}};"
     f"SERVER={server};"
@@ -28,91 +27,96 @@ conn_str = (
     f"PWD={password};"
 )
 
+def convertir_rows_a_dicts(filas, cursor):
+    columnas = [col[0] for col in cursor.description]
+    resultado = []
+    for fila in filas:
+        d = {}
+        for i, val in enumerate(fila):
+            if hasattr(val, 'isoformat'):
+                d[columnas[i]] = val.isoformat()
+            elif 'Decimal' in str(type(val)):
+                d[columnas[i]] = float(val)
+            else:
+                d[columnas[i]] = val
+        resultado.append(d)
+    return resultado
+
+def leer_tabla(nombre_tabla):
+    try:
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT * FROM {nombre_tabla}")
+            filas = cursor.fetchall()
+            if not filas:
+                return []
+            return convertir_rows_a_dicts(filas, cursor)
+    except Exception as e:
+        print(f"Error leyendo tabla {nombre_tabla}: {e}")
+        return []
+
+# Función para serializar objetos datetime.date y datetime.datetime para JSON
+def json_serial(obj):
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
+    raise TypeError(f"Tipo no serializable: {type(obj)}")
+
 def main():
     print("Iniciando carga de datos en la base de datos...")
 
     try:
-        # Paso 1: Insertar 100 usuarios
-        print("Insertando 100 usuarios...")
-        generar_usuarios(100, conn_str)  # Debe aceptar conn_str y usar pyodbc internamente
+        # Generar usuarios (ejemplo: 1)
+        print("Generando usuarios...")
+        generar_usuarios(1, conn_str)
 
-        print("Leyendo usuarios...")
+        # Leer usuarios para usar sus IDs
         usuarios = leer_usuarios(conn_str)
+        if usuarios is None or len(usuarios) == 0:
+            print("No se pudieron leer usuarios. Abortando.")
+            return  # o sys.exit(), para parar la ejecución
 
-        # Paso 2: Empleos
-        print("Insertando empleos...")
-        main_empleos()
-        empleos = leer_empleos()
+        # Generar activos para esos usuarios
+        print("Generando activos...")
+        generar_activo(conn_str)
 
-        # Paso 3: Activos
-        print("Insertando activos...")
-        main_activos()
-        activos = leer_activos()
+        # Generar monedas digitales
+        print("Generando monedas digitales...")
+        generar_moneda(conn_str)
 
-        # Paso 4: Monedas
-        print("Insertando monedas digitales...")
-        main_monedas()
-        monedas = leer_monedas()
+        # Generar créditos para usuarios
+        print("Generando créditos...")
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            # Extraemos sólo los IDs de los usuarios para pasarlos correctamente
+            ids_usuarios = [u['id'] for u in usuarios]
+            insertar_creditos(cursor, ids_usuarios)
+            conn.commit()
 
-        # Paso 5: Créditos
-        print("Insertando créditos...")
-        main_creditos()
-        creditos = leer_creditos()
+        # Leer todo para mostrar resumen
+        usuarios_leidos = leer_usuarios(conn_str)
+        activos_leidos = leer_activos(conn_str)
+        monedas_leidas = leer_monedas()
+        #creditos_leidos = leer_creditos(conn_str)
 
-        # Paso 6: Marcar morosos
-        print("Marcando usuarios morosos...")
-        marcar_morosos(conn_str)
+        with pyodbc.connect(conn_str) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM creditos")
+            creditos_filas = cursor.fetchall()
+            creditos_leidos = convertir_rows_a_dicts(creditos_filas, cursor)
 
-        # Imprimir todos los datos en formato JSON
-        print(json.dumps({
-            "usuarios": usuarios[:10],  # solo primeros 10
-            "empleos": empleos[:10],
-            "activos": activos[:10],
-            "monedas": monedas[:10],
-            "creditos": creditos[:10]
-        }, indent=2, ensure_ascii=False))
+        resumen = {
+            "usuarios": usuarios_leidos[:3],  # Muestra solo 3 por ejemplo
+            "activos": activos_leidos[:3],
+            "monedas": monedas_leidas[:3],
+            "creditos": creditos_leidos[:3]
+        }
 
-        print("\nTodos los datos fueron insertados correctamente.")
+        print(json.dumps(resumen, indent=2, ensure_ascii=False, default=json_serial))
+
+        print("\nCarga y lectura de datos finalizada con éxito.")
+
     except Exception as e:
         print("Error durante la ejecución del proceso:", e)
-
-
-def marcar_morosos(conn_str):
-    hoy = datetime.now()
-    dias_limite = hoy - timedelta(days=30)
-    fecha_limite_str = dias_limite.strftime('%Y-%m-%d')
-
-    try:
-        with pyodbc.connect(conn_str) as conn:
-            with conn.cursor() as cursor:
-                # Marcar morosos
-                cursor.execute("""
-                    UPDATE usuarios
-                    SET es_moroso = 1
-                    WHERE id IN (
-                        SELECT u.id
-                        FROM usuarios u
-                        JOIN creditos c ON u.id = c.usuario_id
-                        WHERE c.fecha_fin < ? AND c.estado = 'pendiente'
-                    )
-                """, (fecha_limite_str,))
-
-                # Desmarcar no morosos
-                cursor.execute("""
-                    UPDATE usuarios
-                    SET es_moroso = 0
-                    WHERE id NOT IN (
-                        SELECT u.id
-                        FROM usuarios u
-                        JOIN creditos c ON u.id = c.usuario_id
-                        WHERE c.fecha_fin < ? AND c.estado = 'pendiente'
-                    )
-                """, (fecha_limite_str,))
-
-                conn.commit()
-                print("Usuarios morosos actualizados correctamente.")
-    except Exception as e:
-        print(" Error al actualizar morosos:", e)
 
 
 if __name__ == "__main__":

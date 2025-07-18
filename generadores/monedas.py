@@ -63,12 +63,42 @@ def generar_moneda(usuario_id):
     return (usuario_id, tipo, cantidad, valor_actual)
 
 # Insertar monedas para cada usuario
-def insertar_monedas(cursor, ids_usuarios, max_monedas_por_usuario=3):
+def insertar_monedas(cursor, ids_usuarios, cantidad=1):
+    if not ids_usuarios:
+        print(" No hay usuarios disponibles para asignar monedas.")
+        return
+
     datos = []
-    for usuario_id in ids_usuarios:
-        num_monedas = random.randint(0, max_monedas_por_usuario)
-        for _ in range(num_monedas):
-            datos.append(generar_moneda(usuario_id))
+    tipos_por_usuario = {}  # Para controlar tipos asignados por usuario
+
+    intentos = 0
+    max_intentos = cantidad * 10  # Evitar bucles infinitos
+
+    tipos_monedas = list(monedas.keys())
+
+    while len(datos) < cantidad and intentos < max_intentos:
+        intentos += 1
+
+        usuario_id = random.choice(ids_usuarios)
+        tipos_asignados = tipos_por_usuario.get(usuario_id, set())
+
+        tipos_disponibles = [t for t in tipos_monedas if t not in tipos_asignados]
+        if not tipos_disponibles:
+            # Usuario tiene ya todas las monedas, probamos con otro
+            continue
+
+        tipo = random.choice(tipos_disponibles)
+        rango = monedas[tipo]
+        cantidad_val = round(random.uniform(*rango['cantidad']), 8)
+        valor_actual = round(random.uniform(*rango['valor']), 2)
+
+        datos.append((usuario_id, tipo, cantidad_val, valor_actual))
+
+        tipos_asignados.add(tipo)
+        tipos_por_usuario[usuario_id] = tipos_asignados
+
+    if len(datos) < cantidad:
+        print(f" Solo se pudieron generar {len(datos)} monedas sin repetir tipo por usuario.")
 
     if datos:
         sql = """
@@ -78,6 +108,7 @@ def insertar_monedas(cursor, ids_usuarios, max_monedas_por_usuario=3):
         cursor.fast_executemany = True
         cursor.executemany(sql, datos)
         print(f" Insertadas {len(datos)} monedas digitales.")
+
 
 # Obtener IDs de los usuarios existentes
 def obtener_ids_usuarios(cursor):
