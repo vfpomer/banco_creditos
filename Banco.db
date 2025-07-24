@@ -1,18 +1,26 @@
 -- Tabla de usuarios
 CREATE TABLE usuarios (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    nombre NVARCHAR(100),
-    apellido NVARCHAR(100),
+    nombre NVARCHAR(100) NOT NULL,
+    apellido NVARCHAR(100) NOT NULL,
     estado_civil NVARCHAR(50),
-    dni NVARCHAR(20) UNIQUE,
+    dni NVARCHAR(20) NOT NULL UNIQUE,
     nacionalidad NVARCHAR(255),
     fecha_nacimiento DATE,
     direccion NVARCHAR(255),
     codigo_postal NVARCHAR(20),
     provincia NVARCHAR(100),
-    telefono NVARCHAR(20),
-    email NVARCHAR(100) UNIQUE,
-    es_moroso BIT DEFAULT 0
+    telefono NVARCHAR(20) NOT NULL UNIQUE,
+    email NVARCHAR(100) NOT NULL UNIQUE,
+    es_moroso BIT,
+    profesion NVARCHAR(100),
+    salario FLOAT,
+    numero_cuenta NVARCHAR(24) NOT NULL UNIQUE,
+    tipo_cuenta NVARCHAR(20) NOT NULL,
+    saldo FLOAT NOT NULL,
+    antiguedad_cliente DATE,
+    genero NVARCHAR(20)
+
 );
 
 -- Tabla de créditos
@@ -31,7 +39,7 @@ CREATE TABLE empleos (
     id INT IDENTITY(1,1) PRIMARY KEY,
     usuario_id INT,
     empresa NVARCHAR(255),
-    salario DECIMAL(18, 2),
+    
     fecha_inicio DATE,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );

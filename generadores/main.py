@@ -27,6 +27,8 @@ conn_str = (
     f"PWD={password};"
 )
 
+
+
 def convertir_rows_a_dicts(filas, cursor):
     columnas = [col[0] for col in cursor.description]
     resultado = []

@@ -19,7 +19,7 @@
     },
     {
               "parameters": {
-                "command": "cd C:\\Users\\rey_d\\Documents\\GitHub\\banco_creditos\\generadores && python main.py",
+                "command": "cd C:\\Users\\rey_d\\Documents\\GitHub\\banco_creditos\\generadores && python3 main.py",
                 "maxBuffer": 1073741824
 
               },
