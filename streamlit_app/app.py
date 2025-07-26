@@ -60,7 +60,7 @@ def load_banco_data():
     conn_str = (
         f'DRIVER={{ODBC Driver 17 for SQL Server}};'
         f'SERVER=upgradeserver-vf.database.windows.net;'
-        f'DATABASE=Banco;'
+        f'DATABASE=banco;'
         f'UID={username};'
         f'PWD={password};'
         'Trusted_Connection=no;'
