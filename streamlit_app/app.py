@@ -13,14 +13,6 @@ warnings.filterwarnings('ignore')
 import streamlit.components.v1 as components
 import datetime
 
-img_path = "img/icono.jpg"
-st.write("Ruta absoluta de la imagen:", os.path.abspath(img_path))
-
-if os.path.exists(img_path):
-    st.image(img_path, use_container_width=True)
-else:
-    st.error(f"No se encontró la imagen en: {img_path}")
-
 st.set_page_config(
     page_title="Panel Banco: Morosidad y Predicción",
     page_icon="🏦",
