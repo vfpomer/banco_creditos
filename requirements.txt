@@ -7,3 +7,9 @@ folium
 plotly.express
 nbformat>=4.2.0
 matplotlib
+seaborn
+pandas
+numpy
+scipy
+scikit-image
+scikit-learn
