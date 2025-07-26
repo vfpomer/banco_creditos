@@ -24,6 +24,7 @@ except Exception as e:
     st.error(f"No se pudo obtener la IP: {e}")
 
 
+
 st.set_page_config(
     page_title="Panel Banco: Morosidad y Predicción",
     page_icon="🏦",
