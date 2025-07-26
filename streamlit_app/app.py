@@ -13,20 +13,6 @@ warnings.filterwarnings('ignore')
 import streamlit.components.v1 as components
 import datetime
 
-import streamlit as st
-import requests
-
-st.write("Tu IP pública actual es:")
-try:
-    ip = requests.get('https://api.ipify.org').text
-    st.code(ip)
-except Exception as e:
-    st.error(f"No se pudo obtener la IP: {e}")
-st.write("ODBC Drivers disponibles:")
-drivers = [driver for driver in pyodbc.drivers()]
-st.write(drivers)
-
-
 st.set_page_config(
     page_title="Panel Banco: Morosidad y Predicción",
     page_icon="🏦",
