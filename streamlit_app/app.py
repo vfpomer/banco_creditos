@@ -48,22 +48,31 @@ Este panel permite explorar los datos de usuarios, créditos y morosidad del ban
 # ----------- Carga de datos desde SQL Server -----------
 @st.cache_data(ttl=3600)
 def load_banco_data():
-    dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'generadores', '.env')
-    load_dotenv(dotenv_path)
+    if 'localhost' in os.getenv('HOSTNAME', '') or os.getenv('LOCAL_ENV', '0') == '1':
+        # Solo cargar .env en local
+        dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'generadores', '.env')
+        load_dotenv(dotenv_path)
+    
     username = os.getenv("USUARIO_DB")
     password = os.getenv("CLAVE_BD")
     if not username or not password:
         st.error("No se encontraron las variables de entorno USUARIO_DB o CLAVE_BD.")
         return None, None, None, None, None
+
     conn_str = (
-        'DRIVER={ODBC Driver 17 for SQL Server};'
-        'SERVER=upgradeserver-vf.database.windows.net;'
-        'DATABASE=Banco;'
+        f'DRIVER={{ODBC Driver 17 for SQL Server}};'
+        f'SERVER=upgradeserver-vf.database.windows.net;'
+        f'DATABASE=Banco;'
         f'UID={username};'
         f'PWD={password};'
-        'Connection Timeout=30;'
+        'Trusted_Connection=no;'
+        'Timeout=30;'
     )
+
     try:
+        import pyodbc
+        import pandas as pd
+
         conn = pyodbc.connect(conn_str)
         usuarios = pd.read_sql("SELECT * FROM usuarios", conn)
         creditos = pd.read_sql("SELECT * FROM creditos", conn)
