@@ -60,11 +60,11 @@ def load_banco_data():
     conn_str = (
         f'DRIVER={{ODBC Driver 17 for SQL Server}};'
         f'SERVER=upgradeserver-vf.database.windows.net;'
-        f'DATABASE=banco;'
+        f'DATABASE=Banco;'
         f'UID={username};'
         f'PWD={password};'
         'Trusted_Connection=no;'
-        'Timeout=30;'
+        'Timeout=60;'
     )
 
     try:
