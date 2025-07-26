@@ -13,6 +13,14 @@ warnings.filterwarnings('ignore')
 import streamlit.components.v1 as components
 import datetime
 
+img_path = "img/icono.jpg"
+st.write("Ruta absoluta de la imagen:", os.path.abspath(img_path))
+
+if os.path.exists(img_path):
+    st.image(img_path, use_container_width=True)
+else:
+    st.error(f"No se encontró la imagen en: {img_path}")
+
 st.set_page_config(
     page_title="Panel Banco: Morosidad y Predicción",
     page_icon="🏦",
@@ -89,7 +97,7 @@ if usuarios is None:
 
 # ----------- SIDEBAR: Filtros de búsqueda -----------
 with st.sidebar:
-    st.image(r"img\icono.jpg", use_container_width=True)  # Usa use_container_width en vez de use_column_width
+    st.image("img/icono.jpg", use_container_width=True)  # Usa use_container_width en vez de use_column_width
     st.header("🔎 Filtros de búsqueda")
 
     # Filtros para activos financieros
