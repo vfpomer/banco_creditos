@@ -89,7 +89,7 @@ if usuarios is None:
 
 # ----------- SIDEBAR: Filtros de búsqueda -----------
 with st.sidebar:
-    st.image("img\icono.jpg", use_container_width=True)  # Usa use_container_width en vez de use_column_width
+    st.image(r"img\icono.jpg", use_container_width=True)  # Usa use_container_width en vez de use_column_width
     st.header("🔎 Filtros de búsqueda")
 
     # Filtros para activos financieros
