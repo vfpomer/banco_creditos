@@ -5,6 +5,11 @@ import logging
 import os
 import shutil
 from rag_system import RAGSystem
+from langchain_community.embeddings import OllamaEmbeddings
+
+
+
+
 
 # Configuración
 UPLOAD_DIR = "uploaded_docs"
