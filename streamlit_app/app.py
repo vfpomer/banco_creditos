@@ -91,16 +91,23 @@ def load_banco_data():
         st.error("No se encontraron las variables de entorno USUARIO_DB o CLAVE_BD.")
         return None, None, None, None, None
 
-    # Cadena de conexión limpia para Azure SQL
+    # Variables de entorno para conexión
+    username = os.getenv("USUARIO_DB")
+    password = os.getenv("CLAVE_BD")
+
+    # Asegúrate que el usuario incluya el servidor si es Azure SQL
+    if username and "@" not in username:
+        username = f"vanesa@upgradeserver-vf"
+
     conn_str = (
-        f'DRIVER={{ODBC Driver 17 for SQL Server}};'
-        f'SERVER=upgradeserver-vf.database.windows.net;'
-        f'DATABASE=Banco;'
-        f'UID={username};'
-        f'PWD={password};'
-        'Encrypt=yes;'
-        'TrustServerCertificate=no;'
-        'Connection Timeout=30;'
+        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+        f"SERVER=upgradeserver-vf.database.windows.net;"
+        f"DATABASE=Banco;"
+        f"UID={username};"
+        f"PWD={password};"
+        f"Encrypt=yes;"
+        f"TrustServerCertificate=no;"
+        f"Connection Timeout=30;"
     )
 
     try:
