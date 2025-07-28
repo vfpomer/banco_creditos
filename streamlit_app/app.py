@@ -16,10 +16,6 @@ import logging
 import shutil
 import tempfile
 
-import requests
-ip = requests.get('https://api.ipify.org').text
-print(f'Tu IP pública es: {ip}')
-
 st.set_page_config(
     page_title="Panel Banco: Morosidad y Predicción",
     page_icon="🏦",
