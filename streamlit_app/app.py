@@ -16,6 +16,25 @@ import logging
 import shutil
 import tempfile
 
+import os
+from dotenv import load_dotenv
+
+# 🔧 Forzar entorno local
+os.environ["LOCAL_ENV"] = "1"
+
+# Cargar .env si estamos en local
+if os.getenv('LOCAL_ENV', '1') == '1':
+    dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'generadores', '.env')
+    load_dotenv(dotenv_path)
+    print("✅ .env cargado desde:", dotenv_path)
+    print("USUARIO_DB =", os.getenv("USUARIO_DB"))
+    print("CLAVE_BD =", os.getenv("CLAVE_BD"))
+else:
+    print("⚠️ No se cargó el .env (modo cloud o entorno controlado)")
+
+
+
+
 st.set_page_config(
     page_title="Panel Banco: Morosidad y Predicción",
     page_icon="🏦",
@@ -47,19 +66,32 @@ Este panel permite explorar los datos de usuarios, créditos y morosidad del ban
 """)
 
 # ----------- Carga de datos desde SQL Server -----------
+import os
+import streamlit as st
+from dotenv import load_dotenv
+
+# Forzar entorno local (puedes quitar esta línea en producción)
+os.environ["LOCAL_ENV"] = "1"
+
 @st.cache_data(ttl=3600)
 def load_banco_data():
-    if 'localhost' in os.getenv('HOSTNAME', '') or os.getenv('LOCAL_ENV', '0') == '1':
-        # Solo cargar .env en local
+    import pyodbc
+    import pandas as pd
+
+    # Cargar .env si estamos en local
+    if os.getenv('LOCAL_ENV', '1') == '1':
         dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'generadores', '.env')
         load_dotenv(dotenv_path)
-    
+        print("✅ .env cargado desde:", dotenv_path)
+
     username = os.getenv("USUARIO_DB")
     password = os.getenv("CLAVE_BD")
+
     if not username or not password:
         st.error("No se encontraron las variables de entorno USUARIO_DB o CLAVE_BD.")
         return None, None, None, None, None
 
+    # Cadena de conexión limpia para Azure SQL
     conn_str = (
         f'DRIVER={{ODBC Driver 17 for SQL Server}};'
         f'SERVER=upgradeserver-vf.database.windows.net;'
@@ -72,10 +104,8 @@ def load_banco_data():
     )
 
     try:
-        import pyodbc
-        import pandas as pd
-
         conn = pyodbc.connect(conn_str)
+        print("✅ Conexión exitosa")
         usuarios = pd.read_sql("SELECT * FROM usuarios", conn)
         creditos = pd.read_sql("SELECT * FROM creditos", conn)
         activos = pd.read_sql("SELECT * FROM activos_financieros", conn)
@@ -83,13 +113,16 @@ def load_banco_data():
         cuentas = pd.read_sql("SELECT * FROM cuentas_bancarias", conn)
         return usuarios, creditos, activos, monedas, cuentas
     except Exception as e:
-        st.error(f"Error de conexión a la base de datos: {e}")
+        st.error(f"❌ Error de conexión a la base de datos: {e}")
         return None, None, None, None, None
 
+
+# ----------- Llamada a la función -----------
 usuarios, creditos, activos, monedas, cuentas = load_banco_data()
 
 if usuarios is None:
     st.stop()
+
 
 # ----------- SIDEBAR: Filtros de búsqueda -----------
 with st.sidebar:
