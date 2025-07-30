@@ -107,7 +107,7 @@ def load_banco_data():
         f"PWD={password};"
         f"Encrypt=yes;"
         f"TrustServerCertificate=no;"
-        f"Connection Timeout=60;"
+        f"Connection Timeout=30;"
     )
 
     try:
