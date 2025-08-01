@@ -16,7 +16,22 @@ import datetime
 import logging
 import shutil
 import tempfile
-from sklearn.preprocessing import StandardScaler
+
+
+
+# 🔧 Forzar entorno local
+os.environ["LOCAL_ENV"] = "1"
+
+# Cargar .env si estamos en local
+if os.getenv('LOCAL_ENV', '1') == '1':
+    dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'generadores', '.env')
+    load_dotenv(dotenv_path)
+    print("✅ .env cargado desde:", dotenv_path)
+    print("USUARIO_DB =", os.getenv("USUARIO_DB"))
+    print("CLAVE_BD =", os.getenv("CLAVE_BD"))
+else:
+    print("⚠️ No se cargó el .env (modo cloud o entorno controlado)")
+
 
 
 st.set_page_config(
@@ -24,7 +39,6 @@ st.set_page_config(
     page_icon="🏦",
     layout="wide"
 )
-
 
 # ---- CSS personalizado para multiselect azul ----
 st.markdown("""
@@ -50,29 +64,63 @@ st.markdown("""
 Este panel permite explorar los datos de usuarios, créditos y morosidad del banco, así como visualizar predicciones y modelos de riesgo.
 """)
 
-# ----------- Carga de datos -----------
+# ----------- Carga de datos desde SQL Server -----------
+import os
+import streamlit as st
+from dotenv import load_dotenv
 
+# Forzar entorno local (puedes quitar esta línea en producción)
+os.environ["LOCAL_ENV"] = "1" 
 
 @st.cache_data(ttl=3600)
 def load_banco_data():
     import pyodbc
     import pandas as pd
 
+    # Cargar .env si estamos en local
+    if os.getenv('LOCAL_ENV', '1') == '1':
+        dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'generadores', '.env')
+        load_dotenv(dotenv_path)
+        print("✅ .env cargado desde:", dotenv_path)
+
+    username = os.getenv("USUARIO_DB")
+    password = os.getenv("CLAVE_BD")
+
+    if not username or not password:
+        st.error("No se encontraron las variables de entorno USUARIO_DB o CLAVE_BD.")
+        return None, None, None, None, None
+
+    # Variables de entorno para conexión
+    username = os.getenv("USUARIO_DB")
+    password = os.getenv("CLAVE_BD")
+
+    # Asegúrate que el usuario incluya el servidor si es Azure SQL
+    if username and "@" not in username:
+        username = f"vanesa@upgradeserver-vf"
+
+    conn_str = (
+        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+        f"SERVER=upgradeserver-vf.database.windows.net;"
+        f"DATABASE=Banco;"
+        f"UID={username};"
+        f"PWD={password};"
+        f"Encrypt=yes;"
+        f"TrustServerCertificate=no;"
+        f"Connection Timeout=30;"
+    )
 
     try:
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
-        usuarios = pd.read_csv(os.path.join(base_dir, 'usuarios.csv'))
-        creditos = pd.read_csv(os.path.join(base_dir, 'creditos.csv'))
-        activos = pd.read_csv(os.path.join(base_dir, 'activo.csv'))
-        monedas = pd.read_csv(os.path.join(base_dir, 'moneda.csv'))
-        cuentas = pd.read_csv(os.path.join(base_dir, 'cuenta.csv'))
-        
+        conn = pyodbc.connect(conn_str)
+        print("✅ Conexión exitosa")
+        usuarios = pd.read_sql("SELECT * FROM usuarios", conn)
+        creditos = pd.read_sql("SELECT * FROM creditos", conn)
+        activos = pd.read_sql("SELECT * FROM activos_financieros", conn)
+        monedas = pd.read_sql("SELECT * FROM monedas_digitales", conn)
+        cuentas = pd.read_sql("SELECT * FROM cuentas_bancarias", conn)
         return usuarios, creditos, activos, monedas, cuentas
-
     except Exception as e:
-        st.error(f"Error al cargar los datos: {e}")
-        st.text(traceback.format_exc())
-        return None, None, None
+        st.error(f"❌ Error de conexión a la base de datos: {e}")
+        return None, None, None, None, None
 
 
 # ----------- Llamada a la función -----------
@@ -453,6 +501,23 @@ with tabs[0]:
             except Exception as e:
                 st.info(f"No se pudo calcular la correlación financiera: {e}")
 
+            # 2. Distribución del salario escalado
+            st.subheader("Distribución del Salario Escalado")
+            try:
+                from sklearn.preprocessing import StandardScaler
+                if 'salario' in usuarios_filtrados.columns:
+                    scaler = StandardScaler()
+                    salarios = usuarios_filtrados[['salario']].fillna(0)
+                    salarios_scaled = scaler.fit_transform(salarios)
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    sns.histplot(salarios_scaled.flatten(), bins=30, kde=True, color='skyblue', ax=ax)
+                    ax.set_title('Distribución del Salario Escalado')
+                    ax.set_xlabel('Salario (Escalado)')
+                    ax.set_ylabel('Frecuencia')
+                    st.pyplot(fig)
+            except Exception as e:
+                st.info(f"No se pudo mostrar el histograma de salario escalado: {e}")
+
             # 3. Clustering de usuarios por riesgo (KMeans)
             st.subheader("Distribución de Usuarios por Clúster de Riesgo")
             try:
@@ -467,17 +532,6 @@ with tabs[0]:
                     le = LabelEncoder()
                     df_cluster[col] = le.fit_transform(df_cluster[col].astype(str))
                     encoders[col] = le  # Guardamos el encoder para decodificar luego
-
-                # --- Normalizar salario y otras columnas numéricas con coma decimal ---
-                for col in ['salario', 'edad']:
-                    if col in df_cluster.columns:
-                        df_cluster[col] = (
-                            df_cluster[col]
-                            .astype(str)
-                            .str.replace(',', '.', regex=False)
-                            .replace('', np.nan)
-                            .astype(float)
-                        )
 
                 features = ['edad', 'salario', 'provincia', 'estado_civil', 'profesion']
                 X = df_cluster[features].fillna(0)
@@ -505,7 +559,6 @@ with tabs[0]:
                 st.dataframe(perfil)
             except Exception as e:
                 st.info(f"No se pudo calcular el clustering: {e}")
-
 
             # 4. Usuarios por nacionalidad (Top 10)
             st.subheader("Top 10 Nacionalidades con más Usuarios")
@@ -1195,7 +1248,7 @@ with tabs[0]:
                         st.info(f"No se pudo mostrar el top 20 de monedas por usuario: {e}")
 
                 # 3. Distribución de valor total en monedas digitales
-                '''if not monedas_filtradas.empty:
+                if not monedas_filtradas.empty:
                     st.subheader("Distribución de Valor Total en Monedas Digitales")
                     try:
                         valor_cripto = monedas_filtradas.groupby('usuario_id')['valor_actual'].sum().reset_index(name='total_cripto')
@@ -1207,7 +1260,7 @@ with tabs[0]:
                         plt.tight_layout()
                         st.pyplot(fig)
                     except Exception as e:
-                        st.info(f"No se pudo mostrar la distribución de valor total: {e}")'''
+                        st.info(f"No se pudo mostrar la distribución de valor total: {e}")
 
                 # 4. Top 30 usuarios con más monedas digitales
                 if not monedas_filtradas.empty:
