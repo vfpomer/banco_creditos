@@ -23,7 +23,7 @@ conn_str = (
 fake = Faker('es_ES')
 Faker.seed(42)
 
-TOTAL_CREDITOS_A_GENERAR = 1  # Cambia este valor si deseas generar más
+TOTAL_CREDITOS_A_GENERAR = 1 # Cambia este valor si deseas generar más
 
 def crear_tabla_creditos_si_no_existe(cursor):
     sql = """
